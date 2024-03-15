@@ -22,4 +22,11 @@ struct Affiliate{
     address producer;
     address publisher;
     uint256 productId;
+    bool isConfirmed;
+}
+
+struct Beneficiary{
+    bool isPercentage; 
+    uint256 value;
+    address wallet;
 }
