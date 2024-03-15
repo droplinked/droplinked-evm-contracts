@@ -1,0 +1,30 @@
+{
+  "name": "droplinked-contracts-v2",
+  "version": "1.0.0",
+  "description": "droplinked contracts refactored",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/droplinked/droplinked-contracts-v2.git"
+  },
+  "keywords": [
+    "droplinked",
+    "blockchain",
+    "smart",
+    "contracts",
+    "solidity"
+  ],
+  "author": "k3rn3lpanic",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/droplinked/droplinked-contracts-v2/issues"
+  },
+  "homepage": "https://github.com/droplinked/droplinked-contracts-v2#readme",
+  "devDependencies": {
+    "hardhat": "^2.22.1",
+    "@nomicfoundation/hardhat-toolbox": "5.0.0"
+  }
+}
