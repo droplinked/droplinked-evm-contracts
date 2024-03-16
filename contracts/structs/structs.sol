@@ -1,33 +1,33 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-enum PaymentMethodType{
+enum PaymentMethodType {
     NATIVE_TOKEN,
     USD,
     TOKEN
 }
 
-struct Beneficiary{
-    bool isPercentage; 
+struct Beneficiary {
+    bool isPercentage;
     uint256 value;
     address wallet;
 }
 
-struct PaymentInfo{
+struct PaymentInfo {
     PaymentMethodType paymentType;
     uint256 price;
     address currencyAddress;
     Beneficiary[] beneficiaries;
 }
 
-struct Product{
+struct Product {
     address nftAddress;
     uint256 tokenId;
     PaymentInfo paymentInfo;
     uint256 affiliatePercentage;
 }
 
-struct AffiliateRequest{
+struct AffiliateRequest {
     address publisher;
     uint256 productId;
     bool isConfirmed;
