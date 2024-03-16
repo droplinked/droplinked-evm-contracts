@@ -61,7 +61,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         _;
     }
     
-    constructor(string memory _shopName, string memory _shopAddress, address _shopOwner, string memory _shopLogo, string memory _shopDescription) Ownable(msg.sender) {
+    constructor(string memory _shopName, string memory _shopAddress, address _shopOwner, string memory _shopLogo, string memory _shopDescription) Ownable(_shopOwner) {
         shopName = _shopName;
         shopAddress = _shopAddress;
         shopOwner = _shopOwner;
