@@ -4,6 +4,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "../base/Shop.sol";
 
 contract DropShopDeployer is Ownable {
+    event ShopDeployed(address shop, address nftContract);
+
+    address[] public shopAddresses;
+    address[] public nftContracts;
+    uint256 public shopCount;
+
     constructor() Ownable(msg.sender) {}
 
     function deployShop(
@@ -21,6 +27,10 @@ contract DropShopDeployer is Ownable {
             _shopDescription
         );
         // deploy the nft contract here
+        nftContracts.push(address(0));
+        shopAddresses.push(address(_shop));
+        shopCount++;
+        emit ShopDeployed(address(_shop), address(0));
         return (address(_shop), address(0));
     }
 }

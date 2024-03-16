@@ -8,13 +8,6 @@ import "../interfaces/IDIP1.sol";
 import "./BeneficiaryManager.sol";
 
 contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
-    error AlreadyRequested(address requester, uint256 productId);
-    error RequestDoesntExist(uint256 requestId);
-    error RequestNotConfirmed(uint256 requestId);
-    error RequestAlreadyConfirmed(uint256 requestId);
-    error ProductDoesntExist(uint256 productId);
-    error ProductExists(uint256 productId);
-
     bool private receivedProduct;
     uint256 private receivedTokenId;
     address private receivedFrom;
@@ -141,6 +134,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
             _productId
         );
         if (!receivedProduct) revert("NFT not received");
+        emit ProductRegistered(_productId, msg.sender);
         return _productId;
     }
 
@@ -155,6 +149,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
             product.tokenId,
             ""
         );
+        emit ProductUnregistered(productId, msg.sender);
     }
 
     function requestAffiliate(
@@ -173,6 +168,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         );
         isRequestSubmited[productId][msg.sender] = true;
         affiliateRequestCount += 1;
+        emit AffiliateRequested(requestId, productId, msg.sender);
         return requestId;
     }
 
@@ -186,6 +182,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         onlyOwner
     {
         affiliateRequests[requestId].isConfirmed = true;
+        emit AffiliateRequestApproved(requestId, msg.sender);
     }
 
     function disapproveRequest(
@@ -194,6 +191,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         affiliateRequests[requestId].isConfirmed = false;
         AffiliateRequest memory aftemp = affiliateRequests[requestId];
         isRequestSubmited[aftemp.productId][aftemp.publisher] = false;
+        emit AffiliateRequestDisapproved(requestId, msg.sender);
     }
 
     function getAffiliate(
