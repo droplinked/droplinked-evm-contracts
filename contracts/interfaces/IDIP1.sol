@@ -11,6 +11,7 @@ interface IDIP1 {
     function getShopDescription() external view returns (string memory);
     function getProduct(uint256 productId) external view returns (Product memory);
     function getProductCount() external view returns (uint256);
+    function getProductId(Product memory product) external pure returns(uint256);
     function getPaymentInfo(uint256 productId) external view returns (PaymentInfo memory);
     function registerProduct(Product memory product) external returns(uint256);
     function unregisterProduct(uint256 productId) external;

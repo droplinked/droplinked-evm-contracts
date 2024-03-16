@@ -12,7 +12,9 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
     error RequestDoesntExist(uint256 requestId);
     error RequestNotConfirmed(uint256 requestId);
     error RequestAlreadyConfirmed(uint256 requestId);
-
+    error ProductDoesntExist(uint256 productId);
+    error ProductExists(uint256 productId);
+    
     bool private receivedProduct;
     uint256 private receivedTokenId;
     address private receivedFrom;
@@ -47,6 +49,17 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         if (affiliateRequests[requestId].isConfirmed == true) revert RequestAlreadyConfirmed(requestId);
         _;
     }
+
+    modifier productExists(uint256 productId){
+        if (products[productId].nftAddress == address(0)) revert ProductDoesntExist(productId);
+        _;
+    }
+
+    modifier productDoesntExists(Product memory product){
+        uint256 __productId = getProductId(product);
+        if (products[__productId].nftAddress != address(0)) revert ProductExists(__productId);
+        _;
+    }
     
     constructor(string memory _shopName, string memory _shopAddress, address _shopOwner, string memory _shopLogo, string memory _shopDescription) Ownable(msg.sender) {
         shopName = _shopName;
@@ -54,6 +67,10 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         shopOwner = _shopOwner;
         shopLogo = _shopLogo;
         shopDescription = _shopDescription;
+    }
+
+    function getProductId(Product memory product) public pure returns(uint256){
+        return uint256(keccak256(abi.encode(product.nftAddress, product.tokenId)));
     }
 
     function getShopName() external view returns (string memory){
@@ -88,8 +105,8 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         return products[productId].paymentInfo;
     }
 
-    function registerProduct(Product memory product) external onlyOwner() returns(uint256){
-        uint256 _productId = productCount;
+    function registerProduct(Product memory product) external productDoesntExists(product) onlyOwner() returns(uint256){
+        uint256 _productId = getProductId(product);
         products[_productId] = product;
         productCount++;
         receivedProduct = false;
@@ -100,19 +117,18 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         return _productId;
     }
     
-    function unregisterProduct(uint256 productId) onlyOwner() external{
+    function unregisterProduct(uint256 productId) productExists(productId) onlyOwner() external{
         delete products[productId];
-        // transfer the NFT back
-        // TODO
-        // 
+        Product memory product = products[productId];
+        IERC721(product.nftAddress).safeTransferFrom(address(this), msg.sender, product.tokenId, "");
     }
     
     // TODO should this exist?
-    function updateProductPrice(uint256 productId, uint256 price) onlyOwner() external{
+    function updateProductPrice(uint256 productId, uint256 price) productExists(productId) onlyOwner() external{
         products[productId].paymentInfo.price = price;
     }
     
-    function requestAffiliate(uint256 productId) external notRequested(productId, msg.sender) returns (uint256){
+    function requestAffiliate(uint256 productId) external productExists(productId) notRequested(productId, msg.sender) returns (uint256){
         uint256 requestId = affiliateRequestCount;
         affiliateRequests[requestId] = AffiliateRequest(msg.sender, productId, false);
         isRequestSubmited[productId][msg.sender] = true;
@@ -120,7 +136,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         return requestId;
     }
 
-    function approveRequest(uint256 requestId) requestExists(requestId) notConfirmed(requestId) onlyOwner() external{
+    function approveRequest(uint256 requestId) productExists(affiliateRequests[requestId].productId) requestExists(requestId) notConfirmed(requestId) onlyOwner() external{
         affiliateRequests[requestId].isConfirmed = true;
     }
 
