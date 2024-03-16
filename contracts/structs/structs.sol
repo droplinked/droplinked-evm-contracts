@@ -7,26 +7,28 @@ enum PaymentMethodType{
     TOKEN
 }
 
-struct PaymentInfo{
-    PaymentMethodType paymentType;
-    uint256 price;
-    address currencyAddress;
-}
-
-struct Product{
-    PaymentInfo paymentInfo;
-    uint256 affiliatePercentage;
-}
-
-struct Affiliate{
-    address producer;
-    address publisher;
-    uint256 productId;
-    bool isConfirmed;
-}
-
 struct Beneficiary{
     bool isPercentage; 
     uint256 value;
     address wallet;
+}
+
+struct PaymentInfo{
+    PaymentMethodType paymentType;
+    uint256 price;
+    address currencyAddress;
+    Beneficiary[] beneficiaries;
+}
+
+struct Product{
+    address nftAddress;
+    uint256 tokenId;
+    PaymentInfo paymentInfo;
+    uint256 affiliatePercentage;
+}
+
+struct AffiliateRequest{
+    address publisher;
+    uint256 productId;
+    bool isConfirmed;
 }
