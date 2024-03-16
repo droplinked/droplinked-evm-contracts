@@ -2,14 +2,20 @@
 pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "../interfaces/IDIP1.sol";
 import "./BeneficiaryManager.sol";
 
-contract DropShop is IDIP1, BenficiaryManager, Ownable {
+contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
     error AlreadyRequested(address requester, uint256 productId);
     error RequestDoesntExist(uint256 requestId);
     error RequestNotConfirmed(uint256 requestId);
     error RequestAlreadyConfirmed(uint256 requestId);
+
+    bool private receivedProduct;
+    uint256 private receivedTokenId;
+    address private receivedFrom;
 
     string public shopName;
     string public shopAddress;
@@ -86,9 +92,11 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable {
         uint256 _productId = productCount;
         products[_productId] = product;
         productCount++;
-        // transfer the NFT to shop
-        // TODO
-        //
+        receivedProduct = false;
+        receivedTokenId = product.tokenId;
+        receivedFrom = product.nftAddress;
+        IERC721(product.nftAddress).safeTransferFrom(msg.sender, address(this), _productId);
+        if (!receivedProduct) revert("NFT not received");
         return _productId;
     }
     
@@ -135,4 +143,15 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable {
     function purchaseProduct(uint256 productId, uint256 amount) external{}
     function purchaseAffiliateFor(address receiver, uint256 requestId, uint256 amount) external{}
     function purchaseAffiliate(uint256 requestId, uint256 amount) external{}
+
+    function onERC721Received(
+        address operator,
+        address from,
+        uint256 tokenId,
+        bytes calldata data
+    ) external returns (bytes4){
+        receivedProduct = true;
+        if (receivedTokenId != tokenId || receivedFrom != from || operator != address(this)) revert ("Not expecting this NFT");
+        return this.onERC721Received.selector;
+    }
 }
