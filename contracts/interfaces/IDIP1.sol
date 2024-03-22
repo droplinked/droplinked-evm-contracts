@@ -10,14 +10,32 @@ interface IDIP1 {
     error RequestAlreadyConfirmed(uint256 requestId);
     error ProductDoesntExist(uint256 productId);
     error ProductExists(uint256 productId);
-    
+
     event ProductRegistered(uint256 indexed productId, address indexed owner);
     event ProductUnregistered(uint256 indexed productId, address indexed owner);
-    event AffiliateRequested(uint256 indexed requestId, uint256 indexed productId, address requester);
-    event AffiliateRequestApproved(uint256 indexed requestId, address indexed approver);
-    event AffiliateRequestDisapproved(uint256 indexed requestId, address indexed disapprover);
-    event ProductPurchased(uint256 indexed productId, address indexed buyer, uint256 amount);
-    event AffiliatePurchase(uint256 indexed requestId, address indexed buyer, uint256 amount);
+    event AffiliateRequested(
+        uint256 indexed requestId,
+        uint256 indexed productId,
+        address requester
+    );
+    event AffiliateRequestApproved(
+        uint256 indexed requestId,
+        address indexed approver
+    );
+    event AffiliateRequestDisapproved(
+        uint256 indexed requestId,
+        address indexed disapprover
+    );
+    event ProductPurchased(
+        uint256 indexed productId,
+        address indexed buyer,
+        uint256 amount
+    );
+    event AffiliatePurchase(
+        uint256 indexed requestId,
+        address indexed buyer,
+        uint256 amount
+    );
 
     function getShopName() external view returns (string memory);
     function getShopAddress() external view returns (string memory);
@@ -34,7 +52,16 @@ interface IDIP1 {
     function getPaymentInfo(
         uint256 productId
     ) external view returns (PaymentInfo memory);
-    function registerProduct(Product memory product) external returns (uint256);
+    function registerProduct(
+        uint256 _tokenId,
+        address _nftAddress,
+        uint256 _affiliatePercentage,
+        uint256 _price,
+        address _currencyAddress,
+        ProductType _productType,
+        PaymentMethodType _paymentType,
+        Beneficiary[] memory _beneficiaries
+    ) external returns (uint256);
     function unregisterProduct(uint256 productId) external;
     function requestAffiliate(uint256 productId) external returns (uint256);
     function approveRequest(uint256 requestId) external;

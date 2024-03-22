@@ -7,16 +7,26 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "../interfaces/IDIP1.sol";
 import "./BeneficiaryManager.sol";
 
+/*
+
+Done so far:
+1. register product:
+Each product has these attributes:
+    uint256 tokenId;
+    address nftAddress;
+    PaymentInfo paymentInfo;
+    uint256 affiliatePercentage; --> if this is zero, then the product is not affiliateable
+
+Where Payment info contains information about the payment type, the currency address, the beneficiaries list.
+
+*/
+
 contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
     bool private receivedProduct;
     uint256 private receivedTokenId;
     address private receivedFrom;
+    ShopInfo public _shopInfo;
 
-    string public shopName;
-    string public shopAddress;
-    address public shopOwner;
-    string public shopLogo;
-    string public shopDescription;
     mapping(uint256 productId => Product product) public products;
     mapping(uint256 productId => mapping(address requester => bool))
         public isRequestSubmited;
@@ -55,8 +65,8 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         _;
     }
 
-    modifier productDoesntExists(Product memory product) {
-        uint256 __productId = getProductId(product);
+    modifier productDoesntExists(Product memory __product) {
+        uint256 __productId = getProductId(__product);
         if (products[__productId].nftAddress != address(0))
             revert ProductExists(__productId);
         _;
@@ -69,11 +79,41 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         string memory _shopLogo,
         string memory _shopDescription
     ) Ownable(_shopOwner) {
-        shopName = _shopName;
-        shopAddress = _shopAddress;
-        shopOwner = _shopOwner;
-        shopLogo = _shopLogo;
-        shopDescription = _shopDescription;
+        _shopInfo.shopName = _shopName;
+        _shopInfo.shopAddress = _shopAddress;
+        _shopInfo.shopOwner = _shopOwner;
+        _shopInfo.shopLogo = _shopLogo;
+        _shopInfo.shopDescription = _shopDescription;
+    }
+
+    function constructProduct(
+        uint256 _tokenId,
+        address _nftAddress,
+        uint256 _affiliatePercentage,
+        uint256 _price,
+        address _currencyAddress,
+        ProductType _productType,
+        PaymentMethodType _paymentType,
+        Beneficiary[] memory _beneficiaries
+    ) private returns (Product memory) {
+        uint[] memory _beneficiaryHashes = new uint[](_beneficiaries.length);
+        for (uint i = 0; i < _beneficiaries.length; i++) {
+            _beneficiaryHashes[i] = this.addBeneficiary(_beneficiaries[i]);
+        }
+        PaymentInfo memory paymentInfo = PaymentInfo(
+            _price,
+            _currencyAddress,
+            _beneficiaryHashes,
+            _paymentType
+        );
+        Product memory result = Product(
+            _tokenId,
+            _nftAddress,
+            _productType,
+            paymentInfo,
+            _affiliatePercentage
+        );
+        return result;
     }
 
     function getProductId(
@@ -84,23 +124,23 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
     }
 
     function getShopName() external view returns (string memory) {
-        return shopName;
+        return _shopInfo.shopName;
     }
 
     function getShopAddress() external view returns (string memory) {
-        return shopAddress;
+        return _shopInfo.shopAddress;
     }
 
     function getShopOwner() external view returns (address) {
-        return shopOwner;
+        return _shopInfo.shopOwner;
     }
 
     function getShopLogo() external view returns (string memory) {
-        return shopLogo;
+        return _shopInfo.shopLogo;
     }
 
     function getShopDescription() external view returns (string memory) {
-        return shopDescription;
+        return _shopInfo.shopDescription;
     }
 
     function getProduct(
@@ -120,15 +160,37 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
     }
 
     function registerProduct(
-        Product memory product
-    ) external productDoesntExists(product) onlyOwner returns (uint256) {
-        uint256 _productId = getProductId(product);
-        products[_productId] = product;
+        uint256 _tokenId,
+        address _nftAddress,
+        uint256 _affiliatePercentage,
+        uint256 _price,
+        address _currencyAddress,
+        ProductType _productType,
+        PaymentMethodType _paymentType,
+        Beneficiary[] memory _beneficiaries
+    ) external onlyOwner returns (uint256) {
+        Product memory __product = constructProduct(
+            _tokenId,
+            _nftAddress,
+            _affiliatePercentage,
+            _price,
+            _currencyAddress,
+            _productType,
+            _paymentType,
+            _beneficiaries
+        );
+
+        uint256 __productId = getProductId(__product);
+        if (products[__productId].nftAddress != address(0))
+            revert ProductExists(__productId);
+
+        uint256 _productId = getProductId(__product);
+        products[_productId] = __product;
         productCount++;
         receivedProduct = false;
-        receivedTokenId = product.tokenId;
-        receivedFrom = product.nftAddress;
-        IERC721(product.nftAddress).safeTransferFrom(
+        receivedTokenId = __product.tokenId;
+        receivedFrom = __product.nftAddress;
+        IERC721(__product.nftAddress).safeTransferFrom(
             msg.sender,
             address(this),
             _productId
@@ -141,7 +203,6 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
     function unregisterProduct(
         uint256 productId
     ) external productExists(productId) onlyOwner {
-        delete products[productId];
         Product memory product = products[productId];
         IERC721(product.nftAddress).safeTransferFrom(
             address(this),
@@ -149,6 +210,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
             product.tokenId,
             ""
         );
+        delete products[productId];
         emit ProductUnregistered(productId, msg.sender);
     }
 

@@ -7,6 +7,11 @@ enum PaymentMethodType {
     TOKEN
 }
 
+enum ProductType {
+    ERC1155,
+    ERC721
+}
+
 struct Beneficiary {
     bool isPercentage;
     uint256 value;
@@ -14,15 +19,16 @@ struct Beneficiary {
 }
 
 struct PaymentInfo {
-    PaymentMethodType paymentType;
     uint256 price;
     address currencyAddress;
-    Beneficiary[] beneficiaries;
+    uint256[] beneficiaries;
+    PaymentMethodType paymentType;
 }
 
 struct Product {
-    address nftAddress;
     uint256 tokenId;
+    address nftAddress;
+    ProductType productType;
     PaymentInfo paymentInfo;
     uint256 affiliatePercentage;
 }
@@ -31,4 +37,12 @@ struct AffiliateRequest {
     address publisher;
     uint256 productId;
     bool isConfirmed;
+}
+
+struct ShopInfo {
+    string shopName;
+    string shopAddress;
+    string shopLogo;
+    string shopDescription;
+    address shopOwner;
 }
