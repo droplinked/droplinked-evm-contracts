@@ -7,26 +7,26 @@ import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "../interfaces/IDIP1.sol";
 import "./BeneficiaryManager.sol";
 
-/*
+interface Deployer {
+    function getDroplinkedFee() view external returns(uint256);
+    function getHeartBeat() view external returns(uint256);
+}
 
-Done so far:
-1. register product:
-Each product has these attributes:
-    uint256 tokenId;
-    address nftAddress;
-    PaymentInfo paymentInfo;
-    uint256 affiliatePercentage; --> if this is zero, then the product is not affiliateable
-
-Where Payment info contains information about the payment type, the currency address, the beneficiaries list.
-
-*/
+interface Drop1155{
+    function mint(
+        string calldata _uri,
+        uint amount,
+        address receiver,
+        bool accepted
+    ) external returns (uint);
+}
 
 contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
     bool private receivedProduct;
     uint256 private receivedTokenId;
     address private receivedFrom;
+    
     ShopInfo public _shopInfo;
-
     mapping(uint256 productId => Product product) public products;
     mapping(uint256 productId => mapping(address requester => bool))
         public isRequestSubmited;
@@ -34,6 +34,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         public affiliateRequests;
     uint256 public productCount;
     uint256 public affiliateRequestCount;
+    Deployer public deployer;
 
     modifier notRequested(uint256 productId, address requester) {
         if (isRequestSubmited[productId][requester])
@@ -77,13 +78,15 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         string memory _shopAddress,
         address _shopOwner,
         string memory _shopLogo,
-        string memory _shopDescription
+        string memory _shopDescription,
+        address _deployer
     ) Ownable(_shopOwner) {
         _shopInfo.shopName = _shopName;
         _shopInfo.shopAddress = _shopAddress;
         _shopInfo.shopOwner = _shopOwner;
         _shopInfo.shopLogo = _shopLogo;
         _shopInfo.shopDescription = _shopDescription;
+        deployer = Deployer(_deployer);
     }
 
     function constructProduct(
@@ -92,7 +95,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         uint256 _affiliatePercentage,
         uint256 _price,
         address _currencyAddress,
-        ProductType _productType,
+        NFTType _nftType,
         PaymentMethodType _paymentType,
         Beneficiary[] memory _beneficiaries
     ) private returns (Product memory) {
@@ -109,7 +112,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         Product memory result = Product(
             _tokenId,
             _nftAddress,
-            _productType,
+            _nftType,
             paymentInfo,
             _affiliatePercentage
         );
@@ -159,13 +162,20 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
         return products[productId].paymentInfo;
     }
 
+    function mintAndRegister(address nftContract, string memory _uri, uint256 amount, bool accepted) external onlyOwner returns(uint256 tokenId, uint256 productId) {
+        tokenId = Drop1155(nftContract).mint(_uri, amount, msg.sender, accepted);
+        // register the product
+        return (tokenId, 0);
+    }
+
+
     function registerProduct(
         uint256 _tokenId,
         address _nftAddress,
         uint256 _affiliatePercentage,
         uint256 _price,
         address _currencyAddress,
-        ProductType _productType,
+        NFTType _nftType,
         PaymentMethodType _paymentType,
         Beneficiary[] memory _beneficiaries
     ) external onlyOwner returns (uint256) {
@@ -175,7 +185,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver {
             _affiliatePercentage,
             _price,
             _currencyAddress,
-            _productType,
+            _nftType,
             _paymentType,
             _beneficiaries
         );
