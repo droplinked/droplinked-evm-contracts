@@ -6,33 +6,57 @@ import "../tokens/erc1155.sol";
 
 contract DropShopDeployer is Ownable {
     event ShopDeployed(address shop, address nftContract);
+    event DroplinkedFeeUpdated(uint256 newFee);
+    event HeartBeatUpdated(uint256 newHeartBeat);
 
     address[] public shopAddresses;
     address[] public nftContracts;
     uint256 public shopCount;
+    uint256 public droplinkedFee = 100;
+    uint256 public heartBeat;
 
-    constructor() Ownable(msg.sender) {}
+    constructor(uint256 _heartBeat) Ownable(msg.sender) {
+        heartBeat = _heartBeat;
+    }
+
+    function setDroplinkedFee(uint256 newFee) external onlyOwner() {
+        droplinkedFee = newFee;
+        emit DroplinkedFeeUpdated(newFee);
+    }
+
+    function setHeartBeat(uint256 newHeartBeat) external onlyOwner() {
+        heartBeat = newHeartBeat;
+        emit HeartBeatUpdated(newHeartBeat);
+    }
 
     function deployShop(
         string memory _shopName,
         string memory _shopAddress,
-        address _shopOwner,
         string memory _shopLogo,
         string memory _shopDescription
     ) public onlyOwner returns (address shop, address nftContract) {
         DropShop _shop = new DropShop(
             _shopName,
             _shopAddress,
-            _shopOwner,
+            msg.sender,
             _shopLogo,
-            _shopDescription
+            _shopDescription,
+            address(this)
         );
         // deploy the nft contract here
-        DroplinkedToken token = new DroplinkedToken(address(this)); // TODO check this line
+        DroplinkedToken token = new DroplinkedToken(tx.origin); // TODO check this line
         nftContracts.push(address(token));
         shopAddresses.push(address(_shop));
         shopCount++;
         emit ShopDeployed(address(_shop), address(token));
         return (address(_shop), address(token));
+    }
+
+    function getDroplinkedFee() view external returns(uint256) {
+        return droplinkedFee;
+    }
+
+    function getHeartBeat() view external returns(uint256) {
+        return heartBeat;
     }
 }
