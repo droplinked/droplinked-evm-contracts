@@ -20,18 +20,29 @@ contract DroplinkedToken is ERC1155, Ownable{
     uint256 public heartBeat = 1200;
     uint public tokenCnt;
     address public managedWallet = 0x8c906310C5F64fe338e27Bd9fEf845B286d0fc1e;
-    mapping(uint => string) uris;
+    mapping(address => bool) public minterAddresses; 
+    mapping(uint => string) public uris;
     mapping(bytes32 => uint) public tokenIdByHash;
-    mapping(uint => uint) tokenCnts;
+    mapping(uint => uint) public tokenCnts;
 
     constructor(address _droplinkedOperator) ERC1155("") Ownable(tx.origin){
         fee = 100;
         operatorContract = _droplinkedOperator;
+        minterAddresses[operatorContract] = true;
     }
 
     modifier onlyOperator(){
         require(msg.sender == operatorContract, "Only the operator can call this contract");
         _;
+    }
+
+    modifier onlyMinter() {
+        require(minterAddresses[msg.sender], "Only Minters can call Mint Function");
+        _;
+    }
+
+    function changeOperator(address _newOperatorContract) external onlyOperator {
+        operatorContract = _newOperatorContract;
     }
 
     function getOwnerAmount(uint tokenId, address _owner) external view returns (uint){
@@ -120,7 +131,7 @@ contract DroplinkedToken is ERC1155, Ownable{
         uint amount,
         address receiver,
         bool accepted
-    ) external onlyOperator returns (uint){ 
+    ) external onlyMinter() returns (uint){ 
         bytes32 metadata_hash = keccak256(abi.encode(_uri));
         uint tokenId = tokenIdByHash[metadata_hash];
         if (tokenId == 0) {
