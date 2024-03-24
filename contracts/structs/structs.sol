@@ -7,7 +7,7 @@ enum PaymentMethodType {
     TOKEN
 }
 
-enum ProductType {
+enum NFTType {
     ERC1155,
     ERC721
 }
@@ -28,7 +28,7 @@ struct PaymentInfo {
 struct Product {
     uint256 tokenId;
     address nftAddress;
-    ProductType productType;
+    NFTType nftType;
     PaymentInfo paymentInfo;
     uint256 affiliatePercentage;
 }
@@ -45,4 +45,10 @@ struct ShopInfo {
     string shopLogo;
     string shopDescription;
     address shopOwner;
+}
+
+enum ProductType {
+    DIGITAL,
+    POD,
+    PHYSICAL
 }
