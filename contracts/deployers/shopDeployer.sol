@@ -44,9 +44,10 @@ contract DropShopDeployer is Ownable {
             address(this)
         );
         // deploy the nft contract here
-        DroplinkedToken token = new DroplinkedToken(tx.origin); // TODO check this line
+        DroplinkedToken token = new DroplinkedToken(address(this));
         nftContracts.push(address(token));
         shopAddresses.push(address(_shop));
+        token.setMinter(address(_shop), true);
         shopCount++;
         emit ShopDeployed(address(_shop), address(token));
         return (address(_shop), address(token));

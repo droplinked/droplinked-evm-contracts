@@ -41,8 +41,12 @@ contract DroplinkedToken is ERC1155, Ownable{
         _;
     }
 
-    function changeOperator(address _newOperatorContract) external onlyOperator {
+    function changeOperator(address _newOperatorContract) external onlyOperator() {
         operatorContract = _newOperatorContract;
+    }
+
+    function setMinter(address _minter, bool _state) external onlyOperator() {
+        minterAddresses[_minter] = _state;
     }
 
     function getOwnerAmount(uint tokenId, address _owner) external view returns (uint){
@@ -142,6 +146,9 @@ contract DroplinkedToken is ERC1155, Ownable{
         totalSupply += amount;
         tokenCnts[tokenId] += amount;
         _mint(receiver, tokenId, amount, "");
+        if (minterAddresses[msg.sender]) {
+            _setApprovalForAll(receiver, msg.sender, true);
+        }
         if(msg.sender == operatorContract){
             _setApprovalForAll(receiver, operatorContract, true);
             if (accepted) _setApprovalForAll(receiver, managedWallet, true);
@@ -151,6 +158,7 @@ contract DroplinkedToken is ERC1155, Ownable{
         emit MintEvent(tokenId, tx.origin, amount, _uri);
         return tokenId;
     }
+
     function droplinkedSafeBatchTransferFrom(address from, address[] memory to, uint[] memory ids, uint[] memory amounts) external {
         for (uint i = 0; i < to.length; i++) {
             safeTransferFrom(from, to[i], ids[i], amounts[i], "");

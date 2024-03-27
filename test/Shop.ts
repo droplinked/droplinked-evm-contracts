@@ -28,6 +28,7 @@ describe("Shop", function(){
         it("Should deploy shop", async function () {
             console.log(`NFT deployed to: ${await nftContract.getAddress()}`);
             console.log(`Shop deployed to: ${await shopContract.getAddress()}`);
+            console.log(`Shop Owner: ${await shopContract.owner()} , owner account: ${await owner.getAddress()}`);
         });
         
         it("Should set the right fee", async function() {
@@ -63,7 +64,33 @@ describe("Shop", function(){
                 POD,
                 PHYSICAL
             };
-            await nftContract.connect(owner).mint();
+            enum PaymentMethodType {
+                NATIVE_TOKEN,
+                USD,
+                TOKEN
+            };
+            type Beneficiary = {
+                isPercentage: boolean,
+                value: number,
+                wallet: string
+            };
+            enum NFTType {
+                ERC1155,
+                ERC721
+            };
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                NFTType.ERC1155,
+                PaymentMethodType.NATIVE_TOKEN,
+                beneficaries
+            );
         });
     });
 });
