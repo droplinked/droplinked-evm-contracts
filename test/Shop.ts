@@ -307,4 +307,48 @@ describe("Shop", function () {
             await expect(shopContract.connect(secondUser).approveRequest(0)).to.be.revertedWithCustomError(shopContract, "OwnableUnauthorizedAccount");
         });
     });
+
+    describe("DisapproveRequest", function(){
+        it("Should disapprove a request", async function(){
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.NATIVE_TOKEN,
+                beneficaries
+            );
+            await shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1));
+            await shopContract.connect(owner).approveRequest(0);
+            await shopContract.connect(owner).disapproveRequest(0);
+            const affiliateReq = await shopContract.affiliateRequests(0);
+            expect(affiliateReq.isConfirmed).to.equal(false);
+        });
+
+        it("Should not disapprove a request if it is not the producer", async function(){
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.NATIVE_TOKEN,
+                beneficaries
+            );
+            await shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1));
+            await shopContract.connect(owner).approveRequest(0);
+            await expect(shopContract.connect(secondUser).disapproveRequest(0)).to.be.revertedWithCustomError(shopContract, "OwnableUnauthorizedAccount");
+        });
+    });
 });
