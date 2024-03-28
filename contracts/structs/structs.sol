@@ -29,6 +29,7 @@ struct Product {
     uint256 tokenId;
     address nftAddress;
     NFTType nftType;
+    ProductType productType;
     PaymentInfo paymentInfo;
     uint256 affiliatePercentage;
 }

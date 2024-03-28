@@ -24,10 +24,11 @@
   },
   "homepage": "https://github.com/droplinked/droplinked-contracts-v2#readme",
   "devDependencies": {
-    "hardhat": "^2.22.1",
-    "@nomicfoundation/hardhat-toolbox": "5.0.0"
+    "@nomicfoundation/hardhat-toolbox": "5.0.0",
+    "hardhat": "^2.22.1"
   },
   "dependencies": {
+    "@nomicfoundation/edr-win32-x64-msvc": "^0.3.2",
     "@openzeppelin/contracts": "^5.0.0"
   }
 }

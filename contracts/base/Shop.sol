@@ -3,12 +3,12 @@ pragma solidity 0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
+import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "../interfaces/IDIP1.sol";
 import "./BeneficiaryManager.sol";
 import "hardhat/console.sol";
-
 
 interface Deployer {
     function getDroplinkedFee() external view returns (uint256);
@@ -24,10 +24,14 @@ interface Drop1155 {
     ) external returns (uint);
 }
 
-contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver, IERC1155Receiver {
+contract DropShop is
+    IDIP1,
+    BenficiaryManager,
+    Ownable,
+    IERC721Receiver,
+    IERC1155Receiver
+{
     bool private receivedProduct;
-    uint256 private receivedTokenId;
-    address private receivedFrom;
 
     ShopInfo public _shopInfo;
     mapping(uint256 productId => Product product) public products;
@@ -99,6 +103,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver, IERC115
         uint256 _price,
         address _currencyAddress,
         NFTType _nftType,
+        ProductType _productType,
         PaymentMethodType _paymentType,
         Beneficiary[] memory _beneficiaries
     ) private returns (Product memory) {
@@ -116,6 +121,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver, IERC115
             _tokenId,
             _nftAddress,
             _nftType,
+            _productType,
             paymentInfo,
             _affiliatePercentage
         );
@@ -168,24 +174,36 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver, IERC115
     function mintAndRegister(
         address _nftAddress,
         string memory _uri,
-        uint256 amount,
-        bool accepted,
+        uint256 _amount,
+        bool _accepted,
         uint256 _affiliatePercentage,
         uint256 _price,
         address _currencyAddress,
         NFTType _nftType,
+        ProductType _productType,
         PaymentMethodType _paymentType,
         Beneficiary[] memory _beneficiaries
     ) public onlyOwner returns (uint256 productId) {
         uint _tokenId = Drop1155(_nftAddress).mint(
             _uri,
-            amount,
+            _amount,
             msg.sender,
-            accepted
+            _accepted
         );
 
         // register the product
-        return registerProduct(_tokenId, _nftAddress, _affiliatePercentage, _price, _currencyAddress, _nftType, _paymentType, _beneficiaries);
+        return
+            registerProduct(
+                _tokenId,
+                _nftAddress,
+                _affiliatePercentage,
+                _price,
+                _currencyAddress,
+                _nftType,
+                _productType,
+                _paymentType,
+                _beneficiaries
+            );
     }
 
     function registerProduct(
@@ -195,10 +213,11 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver, IERC115
         uint256 _price,
         address _currencyAddress,
         NFTType _nftType,
+        ProductType _productType,
         PaymentMethodType _paymentType,
         Beneficiary[] memory _beneficiaries
     ) public onlyOwner returns (uint256) {
-        console.log("Start");
+        uint256 amount = 0;
         Product memory __product = constructProduct(
             _tokenId,
             _nftAddress,
@@ -206,37 +225,72 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver, IERC115
             _price,
             _currencyAddress,
             _nftType,
+            _productType,
             _paymentType,
             _beneficiaries
         );
-
-        console.log("after constructing product");
-        uint256 __productId = getProductId(__product);
-        if (products[__productId].nftAddress != address(0))
-            revert ProductExists(__productId);
-
-        console.log("After check for product existance");
-
         uint256 _productId = getProductId(__product);
+        if (products[_productId].nftAddress != address(0)) {
+            // Product exists, we just want to add more to it
+            if (_nftType == NFTType.ERC721) {
+                receivedProduct = false;
+                amount = 1;
+                IERC721(__product.nftAddress).safeTransferFrom(
+                    msg.sender,
+                    address(this),
+                    _tokenId
+                );
+                if (!receivedProduct) revert("NFT not received");
+            } else if (_nftType == NFTType.ERC1155) {
+                receivedProduct = false;
+                amount = IERC1155(__product.nftAddress).balanceOf(
+                    msg.sender,
+                    _tokenId
+                );
+                IERC1155(__product.nftAddress).safeTransferFrom(
+                    msg.sender,
+                    address(this),
+                    _tokenId,
+                    IERC1155(__product.nftAddress).balanceOf(
+                        msg.sender,
+                        _tokenId
+                    ),
+                    ""
+                );
+                if (!receivedProduct) revert("NFT not received");
+            }
+            emit ProductRegistered(_productId, amount, msg.sender);
+            return _productId;
+        }
+
         products[_productId] = __product;
         productCount++;
-       
-        console.log("Before nft transfer");
-        if (_nftType == NFTType.ERC721){
+        if (_nftType == NFTType.ERC721) {
+            amount = 1;
             receivedProduct = false;
-            receivedTokenId = __product.tokenId;
-            receivedFrom = __product.nftAddress;
             IERC721(__product.nftAddress).safeTransferFrom(
                 msg.sender,
                 address(this),
-                _productId
+                _tokenId
             );
             if (!receivedProduct) revert("NFT not received");
         } else if (_nftType == NFTType.ERC1155) {
-            // TODO 
+            receivedProduct = false;
+            amount = IERC1155(__product.nftAddress).balanceOf(
+                msg.sender,
+                _tokenId
+            );
+            IERC1155(__product.nftAddress).safeTransferFrom(
+                msg.sender,
+                address(this),
+                _tokenId,
+                IERC1155(__product.nftAddress).balanceOf(msg.sender, _tokenId),
+                ""
+            );
+            if (!receivedProduct) revert("NFT not received");
         }
-        console.log("after transfer of nft | at the end");
-        emit ProductRegistered(_productId, msg.sender);
+        emit ProductRegistered(_productId, amount, msg.sender);
+        console.log("Product registered: %s", _productId);
         return _productId;
     }
 
@@ -336,11 +390,6 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver, IERC115
         bytes calldata data
     ) external returns (bytes4) {
         receivedProduct = true;
-        if (
-            receivedTokenId != tokenId ||
-            receivedFrom != from ||
-            operator != address(this)
-        ) revert("Not expecting this NFT");
         return this.onERC721Received.selector;
     }
 
@@ -352,12 +401,7 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver, IERC115
         bytes calldata data
     ) external returns (bytes4) {
         receivedProduct = true;
-        if (
-            receivedTokenId != id ||
-            receivedFrom != from ||
-            operator != address(this)
-        ) revert("Not expecting this NFT");
-        return this.onERC1155Received.selector;
+        return IERC1155Receiver.onERC1155Received.selector;
     }
 
     function onERC1155BatchReceived(
@@ -367,11 +411,13 @@ contract DropShop is IDIP1, BenficiaryManager, Ownable, IERC721Receiver, IERC115
         uint256[] calldata values,
         bytes calldata data
     ) external pure returns (bytes4) {
-        revert ("Shop does not support erc1155 batch transfer");
+        revert("Shop does not support erc1155 batch transfer");
         return this.onERC1155Received.selector;
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(IERC165) returns (bool) {
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view virtual override(IERC165) returns (bool) {
         return interfaceId == type(IERC1155Receiver).interfaceId;
     }
 }

@@ -11,7 +11,7 @@ interface IDIP1 {
     error ProductDoesntExist(uint256 productId);
     error ProductExists(uint256 productId);
 
-    event ProductRegistered(uint256 indexed productId, address indexed owner);
+    event ProductRegistered(uint256 indexed productId, uint256 amount, address indexed owner);
     event ProductUnregistered(uint256 indexed productId, address indexed owner);
     event AffiliateRequested(
         uint256 indexed requestId,
@@ -51,6 +51,7 @@ interface IDIP1 {
         uint256 _price,
         address _currencyAddress,
         NFTType _nftType,
+        ProductType _productType,
         PaymentMethodType _paymentType,
         Beneficiary[] memory _beneficiaries
     ) external returns (uint256 productId);
@@ -71,6 +72,7 @@ interface IDIP1 {
         uint256 _price,
         address _currencyAddress,
         NFTType _nftType,
+        ProductType _productType,
         PaymentMethodType _paymentType,
         Beneficiary[] memory _beneficiaries
     ) external returns (uint256);
