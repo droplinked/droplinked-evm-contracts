@@ -200,7 +200,111 @@ describe("Shop", function () {
             expect(beneficiary.wallet).to.equal(owner.address);
             expect(beneficiary.value).to.equal(1200);
         });
+    });
 
-        
+    describe("Publish request", function () {
+        it("Should publish a request", async function(){
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.NATIVE_TOKEN,
+                beneficaries
+            );
+            await shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1));
+            const affiliateReq = await shopContract.affiliateRequests(0);
+            expect(affiliateReq.isConfirmed).to.equal(false);
+            expect(affiliateReq.publisher).to.equal(firstUser.address);
+            expect(affiliateReq.productId).to.equal(await getProductId(nftAddress, 1));
+        });
+
+        it("Should publish publish a request with the right data", async function(){
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.NATIVE_TOKEN,
+                beneficaries
+            );
+            await shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1));
+            const affiliateReq = await shopContract.affiliateRequests(0);
+            expect(affiliateReq.isConfirmed).to.equal(false);
+            expect(affiliateReq.publisher).to.equal(firstUser.address);
+            expect(affiliateReq.productId).to.equal(await getProductId(nftAddress, 1));
+        });
+
+        it("Should not publish a request twice", async function(){
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.NATIVE_TOKEN,
+                beneficaries
+            );
+            await shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1));
+            await expect(shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1))).to.be.revertedWithCustomError(shopContract, "AlreadyRequested");
+        });
+    });
+
+    describe("AcceptRequest", function(){
+        it("Should accept a request", async function(){
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.NATIVE_TOKEN,
+                beneficaries
+            );
+            await shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1));
+            await shopContract.connect(owner).approveRequest(0);
+            const affiliateReq = await shopContract.affiliateRequests(0);
+            expect(affiliateReq.isConfirmed).to.equal(true);
+        });
+        it("Should not accept a request if it is not the producer", async function(){
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.NATIVE_TOKEN,
+                beneficaries
+            );
+            await shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1));
+            await expect(shopContract.connect(secondUser).approveRequest(0)).to.be.revertedWithCustomError(shopContract, "OwnableUnauthorizedAccount");
+        });
     });
 });

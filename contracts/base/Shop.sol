@@ -290,7 +290,7 @@ contract DropShop is
             if (!receivedProduct) revert("NFT not received");
         }
         emit ProductRegistered(_productId, amount, msg.sender);
-        console.log("Product registered: %s", _productId);
+        // console.log("Product registered: %s", _productId);
         return _productId;
     }
 
