@@ -9,17 +9,19 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import "../interfaces/IDIP1.sol";
 import "./BeneficiaryManager.sol";
 import "hardhat/console.sol";
+import "./CouponManager.sol";
 
 interface Deployer {
     function getDroplinkedFee() external view returns (uint256);
     function getHeartBeat() external view returns (uint256);
 }
 
-interface Drop1155 {
+interface DroplinkedToken1155 {
     function mint(
         string calldata _uri,
         uint amount,
         address receiver,
+        uint256 royalty,
         bool accepted
     ) external returns (uint);
 }
@@ -32,7 +34,6 @@ contract DropShop is
     IERC1155Receiver
 {
     bool private receivedProduct;
-
     ShopInfo public _shopInfo;
     mapping(uint256 productId => Product product) public products;
     mapping(uint256 productId => mapping(address requester => bool))
@@ -179,15 +180,17 @@ contract DropShop is
         uint256 _affiliatePercentage,
         uint256 _price,
         address _currencyAddress,
+        uint256 _royalty,
         NFTType _nftType,
         ProductType _productType,
         PaymentMethodType _paymentType,
         Beneficiary[] memory _beneficiaries
     ) public onlyOwner returns (uint256 productId) {
-        uint _tokenId = Drop1155(_nftAddress).mint(
+        uint _tokenId = DroplinkedToken1155(_nftAddress).mint(
             _uri,
             _amount,
             msg.sender,
+            _royalty,
             _accepted
         );
 

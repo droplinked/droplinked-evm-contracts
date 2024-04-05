@@ -105,6 +105,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -123,6 +124,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -136,6 +138,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -160,6 +163,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -188,6 +192,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -213,6 +218,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -235,6 +241,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -257,6 +264,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -278,6 +286,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -298,6 +307,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -319,6 +329,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -341,6 +352,7 @@ describe("Shop", function () {
                 100,
                 2300,
                 "0x0000000000000000000000000000000000000000",
+                100,
                 NFTType.ERC1155,
                 ProductType.DIGITAL,
                 PaymentMethodType.NATIVE_TOKEN,
@@ -349,6 +361,32 @@ describe("Shop", function () {
             await shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1));
             await shopContract.connect(owner).approveRequest(0);
             await expect(shopContract.connect(secondUser).disapproveRequest(0)).to.be.revertedWithCustomError(shopContract, "OwnableUnauthorizedAccount");
+        });
+    });
+
+    describe("Coupon", function(){
+        it("Should add a coupon", async function(){
+            await shopContract.connect(owner).addCoupon(41239141235, true, 400);
+            expect((await shopContract.getCoupon(41239141235)).couponProducer).to.equal(await owner.getAddress());
+            expect((await shopContract.getCoupon(41239141235)).value).to.equal(400);
+            expect((await shopContract.getCoupon(41239141235)).isPercentage).to.equal(true);
+            expect((await shopContract.getCoupon(41239141235)).secretHash).to.equal(41239141235);
+        });
+
+        it("Should not add a coupon twice", async function(){
+            const CouponManager = await ethers.getContractFactory("CouponManager");
+            const couponManager = await CouponManager.deploy();
+            await couponManager.addCoupon(41239141235, true, 400);
+            await expect(couponManager.addCoupon(41239141235, true, 400)).to.revertedWithCustomError(couponManager, "CouponAlreadyAdded");
+        });
+
+        it("should remove a coupon", async function(){
+            await shopContract.connect(owner).addCoupon(41239141235, true, 400);
+            await shopContract.connect(owner).removeCoupon(41239141235);
+            expect((await shopContract.getCoupon(41239141235)).couponProducer).to.equal("0x0000000000000000000000000000000000000000");
+            expect((await shopContract.getCoupon(41239141235)).value).to.equal(0);
+            expect((await shopContract.getCoupon(41239141235)).isPercentage).to.equal(false);
+            expect((await shopContract.getCoupon(41239141235)).secretHash).to.equal(0);
         });
     });
 });

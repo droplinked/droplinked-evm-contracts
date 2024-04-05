@@ -50,6 +50,7 @@ interface IDIP1 {
         uint256 _affiliatePercentage,
         uint256 _price,
         address _currencyAddress,
+        uint256 _royalty,
         NFTType _nftType,
         ProductType _productType,
         PaymentMethodType _paymentType,

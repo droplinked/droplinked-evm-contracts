@@ -2,7 +2,7 @@
 pragma solidity 0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../base/Shop.sol";
-import "../tokens/erc1155.sol";
+import "../tokens/DropERC1155.sol";
 
 contract DropShopDeployer is Ownable {
     event ShopDeployed(address shop, address nftContract);

@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "../structs/structs.sol";
 
 // TODO move the heartbeat from here to the shop contract!!!
 
@@ -24,6 +25,7 @@ contract DroplinkedToken is ERC1155, Ownable{
     mapping(uint => string) public uris;
     mapping(bytes32 => uint) public tokenIdByHash;
     mapping(uint => uint) public tokenCnts;
+    mapping(uint256 => Issuer) public issuers;
 
     constructor(address _droplinkedOperator) ERC1155("") Ownable(tx.origin){
         fee = 100;
@@ -130,10 +132,15 @@ contract DroplinkedToken is ERC1155, Ownable{
         _safeTransferFrom(from, to, id, amount, data);
     }
 
+    function getIssuer(uint256 tokenId) external view returns(Issuer memory) {
+        return issuers[tokenId];
+    }
+
     function mint(
         string calldata _uri,
         uint amount,
         address receiver,
+        uint256 royalty,
         bool accepted
     ) external onlyMinter() returns (uint){ 
         bytes32 metadata_hash = keccak256(abi.encode(_uri));
@@ -142,6 +149,8 @@ contract DroplinkedToken is ERC1155, Ownable{
             tokenId = tokenCnt + 1;
             tokenCnt++;
             tokenIdByHash[metadata_hash] = tokenId;
+            issuers[tokenId].issuer = receiver;
+            issuers[tokenId].royalty = royalty;
         }
         totalSupply += amount;
         tokenCnts[tokenId] += amount;
