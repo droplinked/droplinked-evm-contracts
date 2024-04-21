@@ -10,8 +10,15 @@ interface IDIP1 {
     error RequestAlreadyConfirmed(uint256 requestId);
     error ProductDoesntExist(uint256 productId);
     error ProductExists(uint256 productId);
+    error oldPrice();
+    error NotEnoughTokens(uint256 tokenId, address producer);
+    error ShopDoesNotOwnToken(uint256 tokenId, address nftAddress);
 
-    event ProductRegistered(uint256 indexed productId, uint256 amount, address indexed owner);
+    event ProductRegistered(
+        uint256 indexed productId,
+        uint256 amount,
+        address indexed owner
+    );
     event ProductUnregistered(uint256 indexed productId, address indexed owner);
     event AffiliateRequested(
         uint256 indexed requestId,
@@ -88,13 +95,23 @@ interface IDIP1 {
     function purchaseProductFor(
         address receiver,
         uint256 productId,
-        uint256 amount
+        uint256 amount,
+        uint80 roundId
     ) external;
-    function purchaseProduct(uint256 productId, uint256 amount) external;
+    function purchaseProduct(
+        uint256 productId,
+        uint256 amount,
+        uint80 roundId
+    ) external;
     function purchaseAffiliateFor(
         address receiver,
         uint256 requestId,
-        uint256 amount
+        uint256 amount,
+        uint80 roundId
     ) external;
-    function purchaseAffiliate(uint256 requestId, uint256 amount) external;
+    function purchaseAffiliate(
+        uint256 requestId,
+        uint256 amount,
+        uint80 roundId
+    ) external;
 }

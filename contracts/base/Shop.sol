@@ -6,14 +6,16 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
-import "../interfaces/IDIP1.sol";
-import "./BeneficiaryManager.sol";
-import "hardhat/console.sol";
-import "./CouponManager.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {IDIP1, ShopInfo, Product, AffiliateRequest, NFTType, ProductType, PaymentMethodType, PaymentInfo, PaymentMethodType, Issuer} from "../interfaces/IDIP1.sol";
+import {BenficiaryManager, Beneficiary} from "./BeneficiaryManager.sol";
+import {console} from "hardhat/console.sol";
 
 interface Deployer {
     function getDroplinkedFee() external view returns (uint256);
     function getHeartBeat() external view returns (uint256);
+    function droplinkedWallet() external view returns (address);
 }
 
 interface DroplinkedToken1155 {
@@ -24,6 +26,7 @@ interface DroplinkedToken1155 {
         uint256 royalty,
         bool accepted
     ) external returns (uint);
+    function issuers(uint256 tokenId) external view returns (Issuer memory);
 }
 
 contract DropShop is
@@ -43,6 +46,8 @@ contract DropShop is
     uint256 public productCount;
     uint256 public affiliateRequestCount;
     Deployer public deployer;
+    AggregatorV3Interface internal immutable priceFeed =
+        AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
 
     modifier notRequested(uint256 productId, address requester) {
         if (isRequestSubmited[productId][requester])
@@ -94,6 +99,7 @@ contract DropShop is
         _shopInfo.shopOwner = _shopOwner;
         _shopInfo.shopLogo = _shopLogo;
         _shopInfo.shopDescription = _shopDescription;
+
         deployer = Deployer(_deployer);
     }
 
@@ -293,7 +299,6 @@ contract DropShop is
             if (!receivedProduct) revert("NFT not received");
         }
         emit ProductRegistered(_productId, amount, msg.sender);
-        // console.log("Product registered: %s", _productId);
         return _productId;
     }
 
@@ -364,25 +369,134 @@ contract DropShop is
     }
 
     // TODO : complete the purchase logic--------------------------------------------------------------------
-    function purchaseProductFor(
-        address receiver,
-        uint256 productId,
-        uint256 amount
-    ) public {
-        // TODO
+
+    function getLatestPrice(uint80 roundId) internal view returns (uint, uint) {
+        (, int256 price, , uint256 timestamp, ) = priceFeed.getRoundData(
+            roundId
+        );
+        return (uint(price), timestamp);
     }
-    function purchaseProduct(uint256 productId, uint256 amount) public {
-        purchaseProductFor(msg.sender, productId, amount);
+
+    function paymentHelper(
+        address from,
+        address to,
+        uint256 amount,
+        Product memory product,
+        uint256 ratio
+    ) public {
+        if (product.paymentInfo.paymentType == PaymentMethodType.USD) {
+            // payment with native token! needs round id, the price is in USD bu payment is in native token
+        } else if (
+            product.paymentInfo.paymentType == PaymentMethodType.NATIVE_TOKEN
+        ) {
+            // the price is in native token
+        } else if (product.paymentInfo.paymentType == PaymentMethodType.TOKEN) {
+            // the price is in token
+            IERC20(product.paymentInfo.currencyAddress);
+        }
+    }
+
+    function toNativePrice(uint value, uint ratio) private pure returns (uint) {
+        return (1e24 * value) / ratio;
+    }
+
+    function applyPercentage(
+        uint value,
+        uint percentage
+    ) private pure returns (uint) {
+        return (value * percentage) / 1e4;
+    }
+
+    function _payBeneficiaries(
+        uint[] memory beneficiaries,
+        uint _productETHPrice,
+        uint amount,
+        uint ratio,
+        uint totalProductPrice,
+        uint newProductPrice,
+        uint __producerShare,
+        Product memory product
+    ) private returns (uint) {
+        for (uint j = 0; j < beneficiaries.length; j++) {
+            Beneficiary memory _beneficiary = getBeneficiary(beneficiaries[j]);
+            uint __beneficiaryShare = 0;
+            if (_beneficiary.isPercentage) {
+                __beneficiaryShare = applyPercentage(
+                    _productETHPrice,
+                    _beneficiary.value
+                );
+            } else {
+                // value based beneficiary, convert to eth and transfer
+                __beneficiaryShare =
+                    (toNativePrice(_beneficiary.value * amount, ratio) *
+                        newProductPrice) /
+                    totalProductPrice;
+            }
+            paymentHelper(
+                address(this),
+                _beneficiary.wallet,
+                __beneficiaryShare,
+                product,
+                ratio
+            );
+            __producerShare -= __beneficiaryShare;
+        }
+        return __producerShare;
+    }
+
+    function purchaseProductFor(address receiver, uint256 productId, uint256 amount, uint80 roundId) public {
+        Product memory product = products[productId];
+        if (product.nftType == NFTType.ERC1155) {
+            if (IERC1155(product.nftAddress).balanceOf(owner() ,product.tokenId) < amount) revert NotEnoughTokens(product.tokenId, owner());
+            IERC1155(product.nftAddress).safeTransferFrom(address(this), receiver, product.tokenId, amount, "");
+        } else {
+            if (amount != 1) revert("Invalid amount");
+            if (IERC721(product.nftAddress).ownerOf(product.tokenId) != address(this)) revert ShopDoesNotOwnToken(product.tokenId, product.nftAddress);
+            IERC721(product.nftAddress).safeTransferFrom(address(this), receiver, product.tokenId, "");
+        }
+        uint256 finalPrice = 0;
+        uint256 ratio = 0;
+        uint256 fee = deployer.getDroplinkedFee();
+        if (product.paymentInfo.paymentType == PaymentMethodType.USD) {
+            uint256 timestamp;
+            (ratio, timestamp) = getLatestPrice(roundId);
+            if (ratio == 0) revert("Chainlink Contract not found");
+            if (block.timestamp > timestamp && block.timestamp - timestamp > 2 * uint(deployer.getHeartBeat())) revert oldPrice();
+            finalPrice = toNativePrice(product.paymentInfo.price, ratio);
+        }
+        Issuer memory issuer = DroplinkedToken1155(product.nftAddress).issuers(product.tokenId);
+        uint __royaltyShare = applyPercentage(finalPrice, issuer.royalty);
+        uint __producerShare = finalPrice;
+        uint __droplinkedShare = applyPercentage(finalPrice, fee);
+        paymentHelper(address(this), deployer.droplinkedWallet(), __droplinkedShare, product, ratio);
+        paymentHelper(address(this), issuer.issuer, __royaltyShare, product, ratio);
+        __producerShare -= (__royaltyShare + __droplinkedShare);
+        uint[] memory beneficiaryHashes = product.paymentInfo.beneficiaries;
+        __producerShare = _payBeneficiaries(beneficiaryHashes, finalPrice, amount, ratio, finalPrice, finalPrice, __producerShare, product);
+        paymentHelper(address(this), owner(), __producerShare, product, ratio);
+    }
+    
+    function purchaseProduct(
+        uint256 productId,
+        uint256 amount,
+        uint80 roundId
+    ) public {
+        purchaseProductFor(msg.sender, productId, amount, roundId);
     }
     function purchaseAffiliateFor(
         address receiver,
         uint256 requestId,
-        uint256 amount
+        uint256 amount,
+        uint80 roundId
     ) public {
         // TODO
     }
-    function purchaseAffiliate(uint256 requestId, uint256 amount) public {
-        purchaseAffiliateFor(msg.sender, requestId, amount);
+    function purchaseAffiliate(
+        uint256 requestId,
+        uint256 amount,
+        uint80 roundId
+    ) public {
+        purchaseAffiliateFor(msg.sender, requestId, amount, roundId);
     }
     // ------------------------------------------------------------------------------------------------------
 

@@ -69,8 +69,7 @@ struct CouponProof {
     bool provided;
 }
 
-
-struct Issuer{
+struct Issuer {
     address issuer;
     uint royalty;
 }

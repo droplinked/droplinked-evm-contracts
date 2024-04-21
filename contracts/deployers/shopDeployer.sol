@@ -11,20 +11,23 @@ contract DropShopDeployer is Ownable {
 
     address[] public shopAddresses;
     address[] public nftContracts;
+    mapping(address shopOwner => address[] shops) public shopOwners;
+    mapping(address shopOwner => address[] nftContracts) public nftOwners;
     uint256 public shopCount;
     uint256 public droplinkedFee = 100;
     uint256 public heartBeat;
+    address public droplinkedWallet;
 
     constructor(uint256 _heartBeat) Ownable(msg.sender) {
         heartBeat = _heartBeat;
     }
 
-    function setDroplinkedFee(uint256 newFee) external onlyOwner() {
+    function setDroplinkedFee(uint256 newFee) external onlyOwner {
         droplinkedFee = newFee;
         emit DroplinkedFeeUpdated(newFee);
     }
 
-    function setHeartBeat(uint256 newHeartBeat) external onlyOwner() {
+    function setHeartBeat(uint256 newHeartBeat) external onlyOwner {
         heartBeat = newHeartBeat;
         emit HeartBeatUpdated(newHeartBeat);
     }
@@ -43,8 +46,9 @@ contract DropShopDeployer is Ownable {
             _shopDescription,
             address(this)
         );
-        // deploy the nft contract here
         DroplinkedToken token = new DroplinkedToken(address(this));
+        shopOwners[msg.sender].push(address(_shop));
+        nftOwners[msg.sender].push(address(token));
         nftContracts.push(address(token));
         shopAddresses.push(address(_shop));
         token.setMinter(address(_shop), true);
@@ -53,11 +57,11 @@ contract DropShopDeployer is Ownable {
         return (address(_shop), address(token));
     }
 
-    function getDroplinkedFee() view external returns(uint256) {
+    function getDroplinkedFee() external view returns (uint256) {
         return droplinkedFee;
     }
 
-    function getHeartBeat() view external returns(uint256) {
+    function getHeartBeat() external view returns (uint256) {
         return heartBeat;
     }
 }

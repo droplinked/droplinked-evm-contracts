@@ -31,8 +31,8 @@ async function getProductId(nftAddress: string, tokenId: number) {
     // Encode the parameters and calculate the keccak256 hash
     const hash = ethers.keccak256(
         ethers.AbiCoder.defaultAbiCoder().encode(
-        ["address", "uint256"],
-        [nftAddress, tokenId])
+            ["address", "uint256"],
+            [nftAddress, tokenId])
     );
     const hashAsUint256 = ethers.toBigInt(hash);
     // console.log("Hash as BigNumber:", hashAsUint256.toString());
@@ -146,14 +146,14 @@ describe("Shop", function () {
             );
             expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(2000);
             let result: ProductStructOutput;
-            
+
             result = await shopContract.getProduct(await getProductId(nftAddress, 1));
             expect(result.tokenId).to.equal(1);
             expect(result.nftType).to.equal(NFTType.ERC1155);
             expect(result.paymentInfo.paymentType).to.equal(PaymentMethodType.NATIVE_TOKEN);
         });
 
-        it("Should set the right product metadata", async function(){
+        it("Should set the right product metadata", async function () {
             const beneficaries: Beneficiary[] = [];
             await shopContract.connect(owner).mintAndRegister(
                 await nftContract.getAddress(),
@@ -176,7 +176,7 @@ describe("Shop", function () {
             expect(tokenURI).to.equal("ipfs.io/ipfs/randomhash");
         });
 
-        it("should set the right beneficiaries when minting", async function(){
+        it("should set the right beneficiaries when minting", async function () {
             const beneficaries: Beneficiary[] = [
                 {
                     isPercentage: true,
@@ -208,7 +208,7 @@ describe("Shop", function () {
     });
 
     describe("Publish request", function () {
-        it("Should publish a request", async function(){
+        it("Should publish a request", async function () {
             const beneficaries: Beneficiary[] = [];
             await shopContract.connect(owner).mintAndRegister(
                 await nftContract.getAddress(),
@@ -231,7 +231,7 @@ describe("Shop", function () {
             expect(affiliateReq.productId).to.equal(await getProductId(nftAddress, 1));
         });
 
-        it("Should publish publish a request with the right data", async function(){
+        it("Should publish publish a request with the right data", async function () {
             const beneficaries: Beneficiary[] = [];
             await shopContract.connect(owner).mintAndRegister(
                 await nftContract.getAddress(),
@@ -254,7 +254,7 @@ describe("Shop", function () {
             expect(affiliateReq.productId).to.equal(await getProductId(nftAddress, 1));
         });
 
-        it("Should not publish a request twice", async function(){
+        it("Should not publish a request twice", async function () {
             const beneficaries: Beneficiary[] = [];
             await shopContract.connect(owner).mintAndRegister(
                 await nftContract.getAddress(),
@@ -275,8 +275,8 @@ describe("Shop", function () {
         });
     });
 
-    describe("AcceptRequest", function(){
-        it("Should accept a request", async function(){
+    describe("AcceptRequest", function () {
+        it("Should accept a request", async function () {
             const beneficaries: Beneficiary[] = [];
             await shopContract.connect(owner).mintAndRegister(
                 await nftContract.getAddress(),
@@ -297,7 +297,7 @@ describe("Shop", function () {
             const affiliateReq = await shopContract.affiliateRequests(0);
             expect(affiliateReq.isConfirmed).to.equal(true);
         });
-        it("Should not accept a request if it is not the producer", async function(){
+        it("Should not accept a request if it is not the producer", async function () {
             const beneficaries: Beneficiary[] = [];
             await shopContract.connect(owner).mintAndRegister(
                 await nftContract.getAddress(),
@@ -318,8 +318,8 @@ describe("Shop", function () {
         });
     });
 
-    describe("DisapproveRequest", function(){
-        it("Should disapprove a request", async function(){
+    describe("DisapproveRequest", function () {
+        it("Should disapprove a request", async function () {
             const beneficaries: Beneficiary[] = [];
             await shopContract.connect(owner).mintAndRegister(
                 await nftContract.getAddress(),
@@ -342,7 +342,7 @@ describe("Shop", function () {
             expect(affiliateReq.isConfirmed).to.equal(false);
         });
 
-        it("Should not disapprove a request if it is not the producer", async function(){
+        it("Should not disapprove a request if it is not the producer", async function () {
             const beneficaries: Beneficiary[] = [];
             await shopContract.connect(owner).mintAndRegister(
                 await nftContract.getAddress(),
@@ -361,32 +361,6 @@ describe("Shop", function () {
             await shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1));
             await shopContract.connect(owner).approveRequest(0);
             await expect(shopContract.connect(secondUser).disapproveRequest(0)).to.be.revertedWithCustomError(shopContract, "OwnableUnauthorizedAccount");
-        });
-    });
-
-    describe("Coupon", function(){
-        it("Should add a coupon", async function(){
-            await shopContract.connect(owner).addCoupon(41239141235, true, 400);
-            expect((await shopContract.getCoupon(41239141235)).couponProducer).to.equal(await owner.getAddress());
-            expect((await shopContract.getCoupon(41239141235)).value).to.equal(400);
-            expect((await shopContract.getCoupon(41239141235)).isPercentage).to.equal(true);
-            expect((await shopContract.getCoupon(41239141235)).secretHash).to.equal(41239141235);
-        });
-
-        it("Should not add a coupon twice", async function(){
-            const CouponManager = await ethers.getContractFactory("CouponManager");
-            const couponManager = await CouponManager.deploy();
-            await couponManager.addCoupon(41239141235, true, 400);
-            await expect(couponManager.addCoupon(41239141235, true, 400)).to.revertedWithCustomError(couponManager, "CouponAlreadyAdded");
-        });
-
-        it("should remove a coupon", async function(){
-            await shopContract.connect(owner).addCoupon(41239141235, true, 400);
-            await shopContract.connect(owner).removeCoupon(41239141235);
-            expect((await shopContract.getCoupon(41239141235)).couponProducer).to.equal("0x0000000000000000000000000000000000000000");
-            expect((await shopContract.getCoupon(41239141235)).value).to.equal(0);
-            expect((await shopContract.getCoupon(41239141235)).isPercentage).to.equal(false);
-            expect((await shopContract.getCoupon(41239141235)).secretHash).to.equal(0);
         });
     });
 });
