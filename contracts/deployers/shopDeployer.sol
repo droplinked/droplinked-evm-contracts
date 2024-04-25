@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../base/Shop.sol";
+import "../interfaces/IDIP1.sol";
 import "../tokens/DropERC1155.sol";
+import "../base/IDropShop.sol";
 
 contract DropShopDeployer is Ownable {
     event ShopDeployed(address shop, address nftContract);
     event DroplinkedFeeUpdated(uint256 newFee);
     event HeartBeatUpdated(uint256 newHeartBeat);
 
-    address[] public shopAddresses;
+    IDropShop[] public shopAddresses;
     address[] public nftContracts;
     mapping(address shopOwner => address[] shops) public shopOwners;
     mapping(address shopOwner => address[] nftContracts) public nftOwners;
@@ -33,28 +34,26 @@ contract DropShopDeployer is Ownable {
     }
 
     function deployShop(
-        string memory _shopName,
-        string memory _shopAddress,
-        string memory _shopLogo,
-        string memory _shopDescription
+        bytes memory bytecode, bytes32 salt
     ) public onlyOwner returns (address shop, address nftContract) {
-        DropShop _shop = new DropShop(
-            _shopName,
-            _shopAddress,
-            msg.sender,
-            _shopLogo,
-            _shopDescription,
-            address(this)
-        );
+        address deployedShop;
+        IDropShop _shop;
+        assembly {
+            deployedShop := create2(0, add(bytecode, 0x20), mload(bytecode), salt)
+            if iszero(extcodesize(deployedShop)) {
+                revert(0, 0)
+            }
+        }
+        _shop = IDropShop(deployedShop);
         DroplinkedToken token = new DroplinkedToken(address(this));
-        shopOwners[msg.sender].push(address(_shop));
+        shopOwners[msg.sender].push(deployedShop);
         nftOwners[msg.sender].push(address(token));
         nftContracts.push(address(token));
-        shopAddresses.push(address(_shop));
-        token.setMinter(address(_shop), true);
+        shopAddresses.push(_shop);
+        token.setMinter(deployedShop, true);
         shopCount++;
-        emit ShopDeployed(address(_shop), address(token));
-        return (address(_shop), address(token));
+        emit ShopDeployed(deployedShop, address(token));
+        return (deployedShop, address(token));
     }
 
     function getDroplinkedFee() external view returns (uint256) {

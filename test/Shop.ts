@@ -3,6 +3,9 @@ import { ethers } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { DropShopDeployer, DroplinkedToken, DropShop } from '../typechain-types';
 import { ProductStructOutput } from "../typechain-types/contracts/interfaces/IDIP1";
+import dotenv from 'dotenv';
+import { bytecode } from "../artifacts/contracts/base/Shop.sol/DropShop.json";
+dotenv.config();
 
 enum ProductType {
     DIGITAL,
@@ -54,7 +57,17 @@ describe("Shop", function () {
         [owner, firstUser, secondUser] = await ethers.getSigners();
         const Deployer = await ethers.getContractFactory("DropShopDeployer");
         deployer = await Deployer.deploy(120);
-        await deployer.connect(owner).deployShop("ShopName", "Address", "LogoUrl", "Description");
+        /*
+        string memory _shopName,
+        string memory _shopAddress,
+        address _shopOwner,
+        string memory _shopLogo,
+        string memory _shopDescription,
+        address _deployer
+        */
+        const constructorArgs = ["ShopName", "Los Angeles", owner.address, "https://127.0.0.1/lol.png", "Desc", await deployer.getAddress()];     
+        const bytecodeWithArgs = ethers.AbiCoder.defaultAbiCoder().encode(["string", "string", "address", "string", "string", "address"],constructorArgs);
+        await deployer.connect(owner).deployShop(bytecode + bytecodeWithArgs.split("0x")[1], "0x0000000000000000000000000000000000000000000000000000000000000001");        
         shopAddress = await deployer.shopAddresses(Number(await deployer.shopCount()) - 1);
         nftAddress = await deployer.nftContracts(Number(await deployer.shopCount()) - 1);
         nftContract = await ethers.getContractAt("DroplinkedToken", nftAddress);
@@ -362,5 +375,32 @@ describe("Shop", function () {
             await shopContract.connect(owner).approveRequest(0);
             await expect(shopContract.connect(secondUser).disapproveRequest(0)).to.be.revertedWithCustomError(shopContract, "OwnableUnauthorizedAccount");
         });
+    });
+
+    describe("Simple purchase", function (){
+        it("Should purchase a product", async function () {
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                100,
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.USD,
+                beneficaries
+            );
+            const producerBeforeBalance = await ethers.provider.getBalance(owner);
+            const productId = await shopContract.getProductIdV2(await nftContract.getAddress(), 1);
+            await shopContract.connect(firstUser).purchaseProduct(productId, 1, 0, {value: ethers.parseEther("23")});
+            expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
+            expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
+            const producerAfterBalance = await ethers.provider.getBalance(owner);
+            expect(producerAfterBalance - producerBeforeBalance).to.equal("22770000000000000000");
+        })
     });
 });

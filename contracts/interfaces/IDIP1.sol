@@ -97,21 +97,21 @@ interface IDIP1 {
         uint256 productId,
         uint256 amount,
         uint80 roundId
-    ) external;
+    ) external payable;
     function purchaseProduct(
         uint256 productId,
         uint256 amount,
         uint80 roundId
-    ) external;
+    ) external payable;
     function purchaseAffiliateFor(
         address receiver,
         uint256 requestId,
         uint256 amount,
         uint80 roundId
-    ) external;
+    ) external payable;
     function purchaseAffiliate(
         uint256 requestId,
         uint256 amount,
         uint80 roundId
-    ) external;
+    ) external payable;
 }
