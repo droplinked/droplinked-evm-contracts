@@ -395,7 +395,7 @@ contract DropShop is
         if (product.paymentInfo.paymentType == PaymentMethodType.USD || product.paymentInfo.paymentType == PaymentMethodType.NATIVE_TOKEN) {
             console.log(">amount: %s", amount);
             payable(to).transfer(amount);
-            console.log(">Transfered..");
+            console.log(">Transfered to: %s", to);
         } else if (product.paymentInfo.paymentType == PaymentMethodType.TOKEN) {
             IERC20(product.paymentInfo.currencyAddress).transferFrom(from, to, amount);
         }
@@ -416,9 +416,8 @@ contract DropShop is
         uint[] memory beneficiaries,
         uint _productETHPrice,
         uint amount,
-        uint totalProductPrice,
-        uint newProductPrice,
         uint __producerShare,
+        uint ratio,
         Product memory product
     ) private returns (uint) {
         for (uint j = 0; j < beneficiaries.length; j++) {
@@ -432,13 +431,11 @@ contract DropShop is
             } else {
                 // value based beneficiary, convert to eth and transfer
                 if (product.paymentInfo.paymentType == PaymentMethodType.USD) {
-                    __beneficiaryShare = toNativePrice(_beneficiary.value, _productETHPrice/product.paymentInfo.price);
+                    __beneficiaryShare = toNativePrice(_beneficiary.value, ratio);
                 }
-                __beneficiaryShare =
-                    (_beneficiary.value * amount *
-                        newProductPrice) /
-                    totalProductPrice;
-
+                else {
+                    __beneficiaryShare = _beneficiary.value * amount;
+                }
             }
             paymentHelper(
                 address(this),
@@ -451,13 +448,21 @@ contract DropShop is
         return __producerShare;
     }
 
-    function purchaseProductFor(address receiver, uint256 productId, uint256 amount, uint80 roundId) public payable {
+    function purchaseProductFor(address receiver, uint256 id, bool isAffiliate, uint256 amount, uint80 roundId) public payable {
         console.log("provided: %s", msg.value);
         console.log("receiver: %s", receiver);
-        console.log("productId: %s", productId);
+        console.log("id: %s", id);
+        console.log("isAffiliate: %s", isAffiliate);
         console.log("amount: %s", amount);
         console.log("roundId: %s", roundId);
-        Product memory product = products[productId];
+        address publisher = address(0);
+        Product memory product;
+        if (isAffiliate){
+            product = products[affiliateRequests[id].productId];
+            publisher = affiliateRequests[id].publisher;
+        } else {
+            product = products[id];
+        }
         if (product.nftType == NFTType.ERC1155) {
             if (amount == 0) revert("Invalid amount");
             console.log("nftType: %s", "ERC1155");
@@ -484,48 +489,42 @@ contract DropShop is
         console.log("finalPrice: %s", finalPrice);
         console.log("ratio: %s", ratio);
         console.log("fee: %s", fee);
+        console.log("publisher: %s", publisher);
         Issuer memory issuer = DroplinkedToken1155(product.nftAddress).issuers(product.tokenId);
         console.log("issuer: %s", issuer.issuer);
         console.log("royalty: %s", issuer.royalty);
         uint __royaltyShare = applyPercentage(finalPrice, issuer.royalty);
         console.log("royalty share: %s", __royaltyShare);
+        uint __publisherShare = isAffiliate? applyPercentage(finalPrice, product.affiliatePercentage): 0;
         uint __producerShare = finalPrice;
         uint __droplinkedShare = applyPercentage(finalPrice, fee);
         console.log("droplinked share: %s", __droplinkedShare);
+        console.log("Droplinked Wallet: %s", deployer.droplinkedWallet());
         paymentHelper(address(this), deployer.droplinkedWallet(), __droplinkedShare, product);
         console.log("Droplinked share paid");
         paymentHelper(address(this), issuer.issuer, __royaltyShare, product);
         console.log("Issuer share paid");
-        __producerShare -= (__royaltyShare + __droplinkedShare);
-        console.log("producer share: %s", __producerShare);
+        if (isAffiliate){
+            paymentHelper(address(this), publisher, __publisherShare, product);
+            console.log("Publisher share paid");
+        }
+        __producerShare -= (__royaltyShare + __droplinkedShare + __publisherShare);
         uint[] memory beneficiaryHashes = product.paymentInfo.beneficiaries;
-        __producerShare = _payBeneficiaries(beneficiaryHashes, finalPrice, amount, finalPrice, finalPrice, __producerShare, product);
+        console.log("Paying Beneficiaries");
+        __producerShare = _payBeneficiaries(beneficiaryHashes, finalPrice, amount, __producerShare, ratio, product);
         console.log("beneficiary shares paid");
+        console.log("producer share: %s", __producerShare);
         paymentHelper(address(this), owner(), __producerShare, product);
         console.log("Producer share paid");
     }
 
     function purchaseProduct(
-        uint256 productId,
+        uint256 id,
+        bool isAffiliate,
         uint256 amount,
         uint80 roundId
     ) public payable {
-        purchaseProductFor(msg.sender, productId, amount, roundId);
-    }
-    function purchaseAffiliateFor(
-        address receiver,
-        uint256 requestId,
-        uint256 amount,
-        uint80 roundId
-    ) public payable{
-        // TODO
-    }
-    function purchaseAffiliate(
-        uint256 requestId,
-        uint256 amount,
-        uint80 roundId
-    ) public payable{
-        purchaseAffiliateFor(msg.sender, requestId, amount, roundId);
+        purchaseProductFor(msg.sender, id, isAffiliate, amount, roundId);
     }
     // ------------------------------------------------------------------------------------------------------
 

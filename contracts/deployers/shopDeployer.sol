@@ -19,8 +19,9 @@ contract DropShopDeployer is Ownable {
     uint256 public heartBeat;
     address public droplinkedWallet;
 
-    constructor(uint256 _heartBeat) Ownable(msg.sender) {
+    constructor(uint256 _heartBeat, address _droplinkedWallet) Ownable(msg.sender) {
         heartBeat = _heartBeat;
+        droplinkedWallet = _droplinkedWallet;
     }
 
     function setDroplinkedFee(uint256 newFee) external onlyOwner {

@@ -47,6 +47,8 @@ describe("Shop", function () {
     let owner: HardhatEthersSigner;
     let firstUser: HardhatEthersSigner;
     let secondUser: HardhatEthersSigner;
+    let thirdUser: HardhatEthersSigner;
+    let fourthUser: HardhatEthersSigner;
     let deployer: DropShopDeployer;
     let shopAddress: string;
     let nftAddress: string;
@@ -54,17 +56,9 @@ describe("Shop", function () {
     let shopContract: DropShop;
 
     beforeEach(async function () {
-        [owner, firstUser, secondUser] = await ethers.getSigners();
+        [owner, firstUser, secondUser, thirdUser, fourthUser] = await ethers.getSigners();
         const Deployer = await ethers.getContractFactory("DropShopDeployer");
-        deployer = await Deployer.deploy(120);
-        /*
-        string memory _shopName,
-        string memory _shopAddress,
-        address _shopOwner,
-        string memory _shopLogo,
-        string memory _shopDescription,
-        address _deployer
-        */
+        deployer = await Deployer.deploy(120, secondUser.address);
         const constructorArgs = ["ShopName", "Los Angeles", owner.address, "https://127.0.0.1/lol.png", "Desc", await deployer.getAddress()];     
         const bytecodeWithArgs = ethers.AbiCoder.defaultAbiCoder().encode(["string", "string", "address", "string", "string", "address"],constructorArgs);
         await deployer.connect(owner).deployShop(bytecode + bytecodeWithArgs.split("0x")[1], "0x0000000000000000000000000000000000000000000000000000000000000001");        
@@ -377,7 +371,7 @@ describe("Shop", function () {
         });
     });
 
-    describe("Simple purchase", function (){
+    describe("purchase", function (){
         it("Should purchase a product", async function () {
             const beneficaries: Beneficiary[] = [];
             await shopContract.connect(owner).mintAndRegister(
@@ -395,12 +389,117 @@ describe("Shop", function () {
                 beneficaries
             );
             const producerBeforeBalance = await ethers.provider.getBalance(owner);
+            const droplinkedBeforeBalance = await ethers.provider.getBalance(secondUser);
             const productId = await shopContract.getProductIdV2(await nftContract.getAddress(), 1);
-            await shopContract.connect(firstUser).purchaseProduct(productId, 1, 0, {value: ethers.parseEther("23")});
+            await shopContract.connect(firstUser).purchaseProduct(productId, false, 1, 0, {value: ethers.parseEther("23")});
             expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
             expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
             const producerAfterBalance = await ethers.provider.getBalance(owner);
             expect(producerAfterBalance - producerBeforeBalance).to.equal("22770000000000000000");
+            const droplinkedAfterBalance = await ethers.provider.getBalance(secondUser);
+            expect(droplinkedAfterBalance - droplinkedBeforeBalance).to.equal("230000000000000000");
         })
+        it("Should purchase a product which has beneficiaries", async function () {
+            const beneficaries: Beneficiary[] = [
+                {
+                    isPercentage: true,
+                    value: 100,
+                    wallet: thirdUser.address
+                },
+                {
+                    isPercentage: true,
+                    value: 200,
+                    wallet: thirdUser.address
+                },
+                {
+                    isPercentage: false,
+                    value: 100,
+                    wallet: thirdUser.address
+                }
+            ];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                100,
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.USD,
+                beneficaries
+            );
+            const producerBeforeBalance = await ethers.provider.getBalance(owner);
+            const droplinkedBeforeBalance = await ethers.provider.getBalance(secondUser);
+            const beneficiaryWalletBefore = await ethers.provider.getBalance(thirdUser.address);
+            const productId = await shopContract.getProductIdV2(await nftContract.getAddress(), 1);
+            await shopContract.connect(firstUser).purchaseProduct(productId, false, 1, 0, { value: ethers.parseEther("23") });
+            expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
+            expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
+            const producerAfterBalance = await ethers.provider.getBalance(owner);
+            expect(producerAfterBalance - producerBeforeBalance).to.equal("21080000000000000000");
+            const droplinkedAfterBalance = await ethers.provider.getBalance(secondUser);
+            expect(droplinkedAfterBalance - droplinkedBeforeBalance).to.equal("230000000000000000");
+            const beneficiaryWalletAfterBalance = await ethers.provider.getBalance(thirdUser.address);
+            expect(beneficiaryWalletAfterBalance - beneficiaryWalletBefore).to.equal("1690000000000000000");
+        });
+
+        it("Should purchase a product which has beneficiaries & affiliate", async function () {
+            const beneficaries: Beneficiary[] = [
+                {
+                    isPercentage: true,
+                    value: 100,
+                    wallet: thirdUser.address
+                },
+                {
+                    isPercentage: true,
+                    value: 200,
+                    wallet: thirdUser.address
+                },
+                {
+                    isPercentage: false,
+                    value: 100,
+                    wallet: thirdUser.address
+                }
+            ];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                100,
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.USD,
+                beneficaries
+            );
+            const productId = await shopContract.getProductIdV2(await nftContract.getAddress(), 1);
+            console.log("ProductId: ", productId);
+            await shopContract.connect(fourthUser).requestAffiliate(productId);
+            await shopContract.connect(owner).approveRequest(0);
+            console.log(await shopContract.getAffiliate(0));
+            expect((await shopContract.getAffiliate(0)).publisher).to.equal(await fourthUser.getAddress());
+            const producerBeforeBalance = await ethers.provider.getBalance(owner);
+            const publisherBeforeBalance = await ethers.provider.getBalance(await fourthUser.getAddress());
+            const droplinkedBeforeBalance = await ethers.provider.getBalance(secondUser);
+            const beneficiaryWalletBefore = await ethers.provider.getBalance(thirdUser.address);
+            const requestId = 0;
+            await shopContract.connect(firstUser).purchaseProduct(requestId, true, 1, 0, { value: ethers.parseEther("23") });
+            expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
+            expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
+            const producerAfterBalance = await ethers.provider.getBalance(owner);
+            expect(producerAfterBalance - producerBeforeBalance).to.equal("20850000000000000000");
+            const droplinkedAfterBalance = await ethers.provider.getBalance(secondUser);
+            expect(droplinkedAfterBalance - droplinkedBeforeBalance).to.equal("230000000000000000");
+            const beneficiaryWalletAfterBalance = await ethers.provider.getBalance(thirdUser.address);
+            expect(beneficiaryWalletAfterBalance - beneficiaryWalletBefore).to.equal("1690000000000000000");
+            const publisherAfterBalance = await ethers.provider.getBalance(await fourthUser.getAddress());
+            expect(publisherAfterBalance - publisherBeforeBalance).to.equal("230000000000000000");
+        });
     });
 });

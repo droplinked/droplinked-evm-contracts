@@ -11,6 +11,7 @@ interface IDIP1 {
     error ProductDoesntExist(uint256 productId);
     error ProductExists(uint256 productId);
     error oldPrice();
+    error AffiliatePOD();
     error NotEnoughTokens(uint256 tokenId, address producer);
     error ShopDoesNotOwnToken(uint256 tokenId, address nftAddress);
 
@@ -94,23 +95,14 @@ interface IDIP1 {
     function getAffiliateRequestCount() external view returns (uint256);
     function purchaseProductFor(
         address receiver,
-        uint256 productId,
+        uint256 id,
+        bool isAffiliate,
         uint256 amount,
         uint80 roundId
     ) external payable;
     function purchaseProduct(
-        uint256 productId,
-        uint256 amount,
-        uint80 roundId
-    ) external payable;
-    function purchaseAffiliateFor(
-        address receiver,
-        uint256 requestId,
-        uint256 amount,
-        uint80 roundId
-    ) external payable;
-    function purchaseAffiliate(
-        uint256 requestId,
+        uint256 id,
+        bool isAffiliate,
         uint256 amount,
         uint80 roundId
     ) external payable;
