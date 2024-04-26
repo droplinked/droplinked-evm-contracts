@@ -13,7 +13,7 @@ contract BenficiaryManager {
     );
 
     function getBeneficiaryHash(
-        Beneficiary calldata beneficiary
+        Beneficiary memory beneficiary
     ) internal pure returns (uint) {
         return
             uint(
@@ -28,8 +28,8 @@ contract BenficiaryManager {
     }
 
     function addBeneficiary(
-        Beneficiary calldata beneficary
-    ) external returns (uint) {
+        Beneficiary memory beneficary
+    ) public returns (uint) {
         uint _hash = getBeneficiaryHash(beneficary);
         if (beneficiaries[_hash].wallet != address(0)) {
             return _hash;

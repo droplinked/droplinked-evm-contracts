@@ -33,10 +33,8 @@ interface IDropShop {
   function priceFeed (  ) external view returns ( address );
   function productCount (  ) external view returns ( uint256 );
   function products ( uint256 productId ) external view returns ( uint256 tokenId, address nftAddress, uint8 nftType, uint8 productType, PaymentInfo memory paymentInfo, uint256 affiliatePercentage );
-  function purchaseAffiliate ( uint256 requestId, uint256 amount, uint80 roundId ) external payable;
-  function purchaseAffiliateFor ( address receiver, uint256 requestId, uint256 amount, uint80 roundId ) external payable;
-  function purchaseProduct ( uint256 productId, uint256 amount, uint80 roundId ) external payable;
-  function purchaseProductFor ( address receiver, uint256 productId, uint256 amount, uint80 roundId ) external payable;
+  function purchaseProduct ( uint256 id, bool isAffiliate, uint256 amount, uint80 roundId ) external payable;
+  function purchaseProductFor ( address receiver, uint256 id, bool isAffiliate, uint256 amount, uint80 roundId ) external payable;
   function registerProduct ( uint256 _tokenId, address _nftAddress, uint256 _affiliatePercentage, uint256 _price, address _currencyAddress, uint8 _nftType, uint8 _productType, uint8 _paymentType, Beneficiary[] memory _beneficiaries ) external returns ( uint256 );
   function renounceOwnership (  ) external;
   function requestAffiliate ( uint256 productId ) external returns ( uint256 );

@@ -1,11 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "../interfaces/IDIP1.sol";
 import "../tokens/DropERC1155.sol";
 import "../base/IDropShop.sol";
 
-contract DropShopDeployer is Ownable {
+/**
+ * @title DropShopDeployer
+ * @dev Contract for deploying and managing drop shops and NFT contracts.
+ */
+contract DropShopDeployer is Initializable, OwnableUpgradeable {
     event ShopDeployed(address shop, address nftContract);
     event DroplinkedFeeUpdated(uint256 newFee);
     event HeartBeatUpdated(uint256 newHeartBeat);
@@ -14,14 +19,16 @@ contract DropShopDeployer is Ownable {
     address[] public nftContracts;
     mapping(address shopOwner => address[] shops) public shopOwners;
     mapping(address shopOwner => address[] nftContracts) public nftOwners;
-    uint256 public shopCount;
-    uint256 public droplinkedFee = 100;
+    uint256 public droplinkedFee;
     uint256 public heartBeat;
     address public droplinkedWallet;
+    uint public shopCount;
 
-    constructor(uint256 _heartBeat, address _droplinkedWallet) Ownable(msg.sender) {
+    function initialize(uint256 _heartBeat, address _droplinkedWallet, uint256 _droplinkedFee) public initializer {
+        __Ownable_init(msg.sender);
         heartBeat = _heartBeat;
         droplinkedWallet = _droplinkedWallet;
+        droplinkedFee = _droplinkedFee;
     }
 
     function setDroplinkedFee(uint256 newFee) external onlyOwner {
@@ -36,7 +43,7 @@ contract DropShopDeployer is Ownable {
 
     function deployShop(
         bytes memory bytecode, bytes32 salt
-    ) public onlyOwner returns (address shop, address nftContract) {
+    ) external onlyOwner returns (address shop, address nftContract) {
         address deployedShop;
         IDropShop _shop;
         assembly {
@@ -52,7 +59,7 @@ contract DropShopDeployer is Ownable {
         nftContracts.push(address(token));
         shopAddresses.push(_shop);
         token.setMinter(deployedShop, true);
-        shopCount++;
+        ++shopCount;
         emit ShopDeployed(deployedShop, address(token));
         return (deployedShop, address(token));
     }

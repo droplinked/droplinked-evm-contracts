@@ -118,7 +118,7 @@ contract DropShop is
     ) private returns (Product memory) {
         uint[] memory _beneficiaryHashes = new uint[](_beneficiaries.length);
         for (uint i = 0; i < _beneficiaries.length; i++) {
-            _beneficiaryHashes[i] = this.addBeneficiary(_beneficiaries[i]);
+            _beneficiaryHashes[i] = addBeneficiary(_beneficiaries[i]);
         }
         PaymentInfo memory paymentInfo = PaymentInfo(
             _price,

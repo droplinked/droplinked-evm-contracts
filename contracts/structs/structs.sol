@@ -73,3 +73,10 @@ struct Issuer {
     address issuer;
     uint royalty;
 }
+
+struct PurchaseData {
+    uint id;
+    uint amount;
+    bool isAffiliate;
+    address shopAddress;
+}

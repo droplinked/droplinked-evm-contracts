@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { ethers } from "hardhat";
+import { ethers, upgrades } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 import { DropShopDeployer, DroplinkedToken, DropShop, DroplinkedPaymentProxy } from '../typechain-types';
 import { ProductStructOutput } from "../typechain-types/contracts/interfaces/IDIP1";
@@ -59,7 +59,7 @@ describe("Shop", function () {
     beforeEach(async function () {
         [owner, firstUser, secondUser, thirdUser, fourthUser] = await ethers.getSigners();
         const Deployer = await ethers.getContractFactory("DropShopDeployer");
-        deployer = await Deployer.deploy(120, secondUser.address);
+        deployer = await upgrades.deployProxy(Deployer,[120, secondUser.address, 100], {initializer: 'initialize'}) as any;
         const constructorArgs = ["ShopName", "Los Angeles", owner.address, "https://127.0.0.1/lol.png", "Desc", await deployer.getAddress()];     
         const bytecodeWithArgs = ethers.AbiCoder.defaultAbiCoder().encode(["string", "string", "address", "string", "string", "address"],constructorArgs);
         await deployer.connect(owner).deployShop(bytecode + bytecodeWithArgs.split("0x")[1], "0x0000000000000000000000000000000000000000000000000000000000000001");        
@@ -786,6 +786,5 @@ describe("Shop", function () {
             const droplinkedAfterBalance = await ethers.provider.getBalance(secondUser);
             expect(droplinkedAfterBalance - droplinkedBeforeBalance).to.equal("460000000000000000");
         });
-
     });
 });
