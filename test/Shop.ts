@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { DropShopDeployer, DroplinkedToken, DropShop } from '../typechain-types';
+import { DropShopDeployer, DroplinkedToken, DropShop, DroplinkedPaymentProxy } from '../typechain-types';
 import { ProductStructOutput } from "../typechain-types/contracts/interfaces/IDIP1";
 import dotenv from 'dotenv';
 import { bytecode } from "../artifacts/contracts/base/Shop.sol/DropShop.json";
@@ -54,6 +54,7 @@ describe("Shop", function () {
     let nftAddress: string;
     let nftContract: DroplinkedToken;
     let shopContract: DropShop;
+    let paymentProxy: DroplinkedPaymentProxy;
 
     beforeEach(async function () {
         [owner, firstUser, secondUser, thirdUser, fourthUser] = await ethers.getSigners();
@@ -62,6 +63,8 @@ describe("Shop", function () {
         const constructorArgs = ["ShopName", "Los Angeles", owner.address, "https://127.0.0.1/lol.png", "Desc", await deployer.getAddress()];     
         const bytecodeWithArgs = ethers.AbiCoder.defaultAbiCoder().encode(["string", "string", "address", "string", "string", "address"],constructorArgs);
         await deployer.connect(owner).deployShop(bytecode + bytecodeWithArgs.split("0x")[1], "0x0000000000000000000000000000000000000000000000000000000000000001");        
+        const PaymentProxy = await ethers.getContractFactory("DroplinkedPaymentProxy");
+        paymentProxy = await PaymentProxy.deploy();
         shopAddress = await deployer.shopAddresses(Number(await deployer.shopCount()) - 1);
         nftAddress = await deployer.nftContracts(Number(await deployer.shopCount()) - 1);
         nftContract = await ethers.getContractAt("DroplinkedToken", nftAddress);
@@ -586,5 +589,42 @@ describe("Shop", function () {
             const publisherAfterBalance = await fakeToken.balanceOf(await fourthUser.getAddress());
             expect(publisherAfterBalance - publisherBeforeBalance).to.equal("230000000000000000");
         });
+    });
+
+    describe("MultiProduct purchase", function (){
+        it("Should purchase a product", async function () {
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                100,
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.USD,
+                beneficaries
+            );
+            const producerBeforeBalance = await ethers.provider.getBalance(owner);
+            const droplinkedBeforeBalance = await ethers.provider.getBalance(secondUser);
+            const productId = await shopContract.getProductIdV2(await nftContract.getAddress(), 1);
+            await paymentProxy.connect(firstUser).droplinkedPurchase([], [], [
+                {
+                    amount: 1,
+                    id: productId,
+                    isAffiliate: false,
+                    shopAddress: await shopContract.getAddress()
+                }
+            ], "0x0000000000000000000000000000000000000000", 0, {value: ethers.parseEther("23")});
+            expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
+            expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
+            const producerAfterBalance = await ethers.provider.getBalance(owner);
+            expect(producerAfterBalance - producerBeforeBalance).to.equal("22770000000000000000");
+            const droplinkedAfterBalance = await ethers.provider.getBalance(secondUser);
+            expect(droplinkedAfterBalance - droplinkedBeforeBalance).to.equal("230000000000000000");
+        })
     });
 });

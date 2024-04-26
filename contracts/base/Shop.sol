@@ -488,6 +488,7 @@ contract DropShop is
             if (block.timestamp > timestamp && block.timestamp - timestamp > 2 * uint(deployer.getHeartBeat())) revert oldPrice();
             finalPrice = toNativePrice(product.paymentInfo.price, ratio);
         }
+        finalPrice = finalPrice * amount;
         console.log("finalPrice: %s", finalPrice);
         console.log("ratio: %s", ratio);
         console.log("fee: %s", fee);
