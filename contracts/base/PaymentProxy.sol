@@ -57,8 +57,9 @@ contract DroplinkedPaymentProxy is Ownable{
         uint currentValue = 0;
         for (uint i = 0; i < tbdReceivers.length; i++) {
             uint value = currency == address(0) ? toNativePrice(tbdValues[i], ratio) : tbdValues[i];
+            if (currency == address(1)) value = tbdValues[i];
             currentValue += value;
-            if (currency != address(0)) {
+            if (currency != address(0) && currency != address(1)) {
                 IERC20(currency).transferFrom(msg.sender, tbdReceivers[i], value);
             } else {
                 payable(tbdReceivers[i]).transfer(value);
@@ -90,13 +91,16 @@ contract DroplinkedPaymentProxy is Ownable{
                 product = cartItemShop.getProduct(id);
             }
             uint finalPrice = product.paymentInfo.price * amount;
-            if (currency != address(0)){
+            if (currency != address(0) && currency != address(1)){
                 require(IERC20(currency).transferFrom(msg.sender, address(this), finalPrice), "transfer failed");
                 IERC20(currency).approve(shopAddress, finalPrice);
-            } else {
+            } else if(currency == address(0)){
                 finalPrice = toNativePrice(finalPrice, ratio);
             }
-            if (currency == address(0)){
+
+            if (currency == address(0) || currency == address(1)){
+                console.log("currency: %s", currency);
+                console.log("***finalPrice: %s", finalPrice);
                 IShopPayment(shopAddress).purchaseProductFor{value: finalPrice}(msg.sender, id, isAffiliate, amount, roundId);
             } else {
                 IShopPayment(shopAddress).purchaseProductFor(msg.sender, id, isAffiliate, amount, roundId);
