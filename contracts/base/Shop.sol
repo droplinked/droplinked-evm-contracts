@@ -177,6 +177,11 @@ contract DropShop is
         return products[productId];
     }
 
+    function getProductViaAffiliateId(
+        uint256 affiliateId) external view returns (Product memory) {
+        return products[affiliateRequests[affiliateId].productId];
+    }
+
     function getProductCount() external view returns (uint256) {
         return productCount;
     }
@@ -398,6 +403,7 @@ contract DropShop is
             console.log(">Transfered to: %s", to);
         } else if (product.paymentInfo.paymentType == PaymentMethodType.TOKEN) {
             console.log(">amount: %s", amount);
+            console.log(">spending from: %s", from);
             IERC20(product.paymentInfo.currencyAddress).transferFrom(from, to, amount);
             console.log(">Transfered to: %s", to);
         }
@@ -468,7 +474,8 @@ contract DropShop is
         if (product.nftType == NFTType.ERC1155) {
             if (amount == 0) revert("Invalid amount");
             console.log("nftType: %s", "ERC1155");
-            if (IERC1155(product.nftAddress).balanceOf(address(this) ,product.tokenId) < amount) revert NotEnoughTokens(product.tokenId, address(this));
+            console.log("Product's nftAddress: %s", product.nftAddress);
+            if (IERC1155(product.nftAddress).balanceOf(address(this), product.tokenId) < amount) revert NotEnoughTokens(product.tokenId, address(this));
             console.log("Transferring");
             IERC1155(product.nftAddress).safeTransferFrom(address(this), receiver, product.tokenId, amount, "");
             console.log("Transfer Done");

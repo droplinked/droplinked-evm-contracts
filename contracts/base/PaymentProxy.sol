@@ -25,6 +25,8 @@ interface IShopPayment {
     ) external payable;
 
     function getProduct(uint256 productId) external view returns (Product memory);
+    function getProductViaAffiliateId(
+        uint256 affiliateId) external view returns (Product memory);
 }
 
 contract DroplinkedPaymentProxy is Ownable{
@@ -73,28 +75,32 @@ contract DroplinkedPaymentProxy is Ownable{
             if (ratio == 0) revert("Chainlink Contract not found");
             if (block.timestamp > timestamp && block.timestamp - timestamp > 2 * heartBeat) revert oldPrice();
         }
-        console.log("Before transfer");
         transferTBDValues(tbdValues, tbdReceivers, ratio, currency);
-        console.log("transfered tbd values");
         // note: we can't have multiple products with different payment methods in the same purchase!
         for(uint i = 0; i < cartItems.length; i++){
             uint id = cartItems[i].id;
             bool isAffiliate = cartItems[i].isAffiliate;
             uint amount = cartItems[i].amount;
-            console.log("id: %s, amount: %s, isAffiliate: %s", id, amount, isAffiliate);
-            IShopPayment cartItemShop = IShopPayment(cartItems[i].shopAddress);
-            console.log("test0");
-            Product memory product = cartItemShop.getProduct(id);
-            console.log("test1");
+            address shopAddress = cartItems[i].shopAddress;
+            IShopPayment cartItemShop = IShopPayment(shopAddress);
+            Product memory product;
+            if (isAffiliate){
+                product = cartItemShop.getProductViaAffiliateId(id);
+            } else {
+                product = cartItemShop.getProduct(id);
+            }
             uint finalPrice = product.paymentInfo.price * amount;
-            console.log("final price: %s", finalPrice);
             if (currency != address(0)){
-                IERC20(currency).transferFrom(msg.sender, address(this), finalPrice);
-                IERC20(currency).approve(cartItems[i].shopAddress, finalPrice);
+                require(IERC20(currency).transferFrom(msg.sender, address(this), finalPrice), "transfer failed");
+                IERC20(currency).approve(shopAddress, finalPrice);
             } else {
                 finalPrice = toNativePrice(finalPrice, ratio);
             }
-            IShopPayment(cartItems[i].shopAddress).purchaseProductFor{value: finalPrice}(msg.sender, id, isAffiliate, amount, roundId);
+            if (currency == address(0)){
+                IShopPayment(shopAddress).purchaseProductFor{value: finalPrice}(msg.sender, id, isAffiliate, amount, roundId);
+            } else {
+                IShopPayment(shopAddress).purchaseProductFor(msg.sender, id, isAffiliate, amount, roundId);
+            }
         }
     }
 }
