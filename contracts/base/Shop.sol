@@ -397,7 +397,9 @@ contract DropShop is
             payable(to).transfer(amount);
             console.log(">Transfered to: %s", to);
         } else if (product.paymentInfo.paymentType == PaymentMethodType.TOKEN) {
+            console.log(">amount: %s", amount);
             IERC20(product.paymentInfo.currencyAddress).transferFrom(from, to, amount);
+            console.log(">Transfered to: %s", to);
         }
     }
 
@@ -438,7 +440,7 @@ contract DropShop is
                 }
             }
             paymentHelper(
-                address(this),
+                msg.sender,
                 _beneficiary.wallet,
                 __beneficiaryShare,
                 product
@@ -500,12 +502,12 @@ contract DropShop is
         uint __droplinkedShare = applyPercentage(finalPrice, fee);
         console.log("droplinked share: %s", __droplinkedShare);
         console.log("Droplinked Wallet: %s", deployer.droplinkedWallet());
-        paymentHelper(address(this), deployer.droplinkedWallet(), __droplinkedShare, product);
+        paymentHelper(msg.sender, deployer.droplinkedWallet(), __droplinkedShare, product);
         console.log("Droplinked share paid");
-        paymentHelper(address(this), issuer.issuer, __royaltyShare, product);
+        paymentHelper(msg.sender, issuer.issuer, __royaltyShare, product);
         console.log("Issuer share paid");
         if (isAffiliate){
-            paymentHelper(address(this), publisher, __publisherShare, product);
+            paymentHelper(msg.sender, publisher, __publisherShare, product);
             console.log("Publisher share paid");
         }
         __producerShare -= (__royaltyShare + __droplinkedShare + __publisherShare);
@@ -514,7 +516,7 @@ contract DropShop is
         __producerShare = _payBeneficiaries(beneficiaryHashes, finalPrice, amount, __producerShare, ratio, product);
         console.log("beneficiary shares paid");
         console.log("producer share: %s", __producerShare);
-        paymentHelper(address(this), owner(), __producerShare, product);
+        paymentHelper(msg.sender, owner(), __producerShare, product);
         console.log("Producer share paid");
     }
 
