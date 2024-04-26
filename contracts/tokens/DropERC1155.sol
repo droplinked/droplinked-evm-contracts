@@ -1,15 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "../structs/structs.sol";
 
-// TODO move the heartbeat from here to the shop contract!!!
-
 contract DroplinkedToken is ERC1155, Ownable{
     event MintEvent(uint tokenId, address recipient, uint amount, string uri);
-    event HeartBeatUpdated(uint256 newHeartBeat);
     event ManageWalletUpdated(address newManagedWallet);
     event FeeUpdated(uint newFee);
 
@@ -18,7 +15,6 @@ contract DroplinkedToken is ERC1155, Ownable{
     uint public fee;
     string public name = "Droplinked";
     string public symbol = "DROP";
-    uint256 public heartBeat = 1200;
     uint public tokenCnt;
     address public managedWallet = 0x8c906310C5F64fe338e27Bd9fEf845B286d0fc1e;
     mapping(address => bool) public minterAddresses; 
@@ -84,11 +80,6 @@ contract DroplinkedToken is ERC1155, Ownable{
         emit ManageWalletUpdated(_newManagedWallet);
     }
 
-    function setHeartBeat(uint256 _heartbeat) external onlyOperator {
-        heartBeat = _heartbeat;
-        emit HeartBeatUpdated(_heartbeat);
-    }
-
     function setFee(uint _fee) external onlyOperator {
         fee = _fee;
         emit FeeUpdated(_fee);
@@ -96,10 +87,6 @@ contract DroplinkedToken is ERC1155, Ownable{
 
     function getFee() external view returns (uint){
         return fee;
-    }
-
-    function getHeartBeat() external view returns (uint256){
-        return heartBeat;
     }
 
     function safeBatchTransferFrom(

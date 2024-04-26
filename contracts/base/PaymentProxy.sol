@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity ^0.8.20;
 
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import { chainLink } from "../test/chainLink.sol";
 import "../structs/structs.sol";
+
 
 interface IShopPayment {
     function purchaseProduct(
@@ -43,8 +44,9 @@ contract DroplinkedPaymentProxy is Ownable{
     /// @notice Emitted when heartBeat is changed.
     event HeartBeatChanged(uint newHeartBeat);
     
-    chainLink public priceFeed = new chainLink();
-
+    AggregatorV3Interface internal immutable priceFeed =
+        AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+        
     constructor() Ownable(msg.sender) {}
     
     /// @param _heartBeat The new heartBeat to set.
