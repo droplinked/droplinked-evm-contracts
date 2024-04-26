@@ -727,5 +727,65 @@ describe("Shop", function () {
             expect(droplinkedAfterBalance - droplinkedBeforeBalance).to.equal("230000000000000000");
         });
 
+        it("Should purchase two products", async function () {
+            const beneficaries: Beneficiary[] = [];
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash",
+                1000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                100,
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.USD,
+                beneficaries
+            );
+
+            await shopContract.connect(owner).mintAndRegister(
+                await nftContract.getAddress(),
+                "ipfs.io/ipfs/randomhash2",
+                2000,
+                true,
+                100,
+                2300,
+                "0x0000000000000000000000000000000000000000",
+                100,
+                NFTType.ERC1155,
+                ProductType.DIGITAL,
+                PaymentMethodType.USD,
+                beneficaries
+            );
+            const producerBeforeBalance = await ethers.provider.getBalance(owner);
+            const droplinkedBeforeBalance = await ethers.provider.getBalance(secondUser);
+            const productId1 = await shopContract.getProductIdV2(await nftContract.getAddress(), 1);
+            const productId2 = await shopContract.getProductIdV2(await nftContract.getAddress(), 2);
+            await paymentProxy.connect(firstUser).droplinkedPurchase([], [], [
+                {
+                    amount: 1,
+                    id: productId1,
+                    isAffiliate: false,
+                    shopAddress: await shopContract.getAddress()
+                }
+            ], "0x0000000000000000000000000000000000000000", 0, { value: ethers.parseEther("23") });
+            
+            await paymentProxy.connect(firstUser).droplinkedPurchase([], [], [
+                {
+                    amount: 1,
+                    id: productId2,
+                    isAffiliate: false,
+                    shopAddress: await shopContract.getAddress()
+                }
+            ], "0x0000000000000000000000000000000000000000", 0, { value: ethers.parseEther("23") });
+            expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
+            expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
+            const producerAfterBalance = await ethers.provider.getBalance(owner);
+            expect(producerAfterBalance - producerBeforeBalance).to.equal("45540000000000000000");
+            const droplinkedAfterBalance = await ethers.provider.getBalance(secondUser);
+            expect(droplinkedAfterBalance - droplinkedBeforeBalance).to.equal("460000000000000000");
+        });
+
     });
 });
