@@ -9,7 +9,6 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IDIP1, ShopInfo, Product, AffiliateRequest, NFTType, ProductType, PaymentMethodType, PaymentInfo, PaymentMethodType, Issuer} from "../interfaces/IDIP1.sol";
 import {BenficiaryManager, Beneficiary} from "./BeneficiaryManager.sol";
-import {console} from "hardhat/console.sol";
 
 interface Deployer {
     function getDroplinkedFee() external view returns (uint256);
@@ -392,10 +391,7 @@ contract DropShop is
         return affiliateRequestCount;
     }
 
-    // TODO : complete the purchase logic--------------------------------------------------------------------
-
     function getLatestPrice(uint80 roundId) internal view returns (uint, uint) {
-        console.log("price feed: %s", address(priceFeed));
         (, int256 price, , uint256 timestamp, ) = priceFeed.getRoundData(
             roundId
         );
@@ -485,9 +481,7 @@ contract DropShop is
         uint256 fee = deployer.getDroplinkedFee();
         if (product.paymentInfo.paymentType == PaymentMethodType.USD) {
             uint256 timestamp;
-            console.log("using chainlink");
             (ratio, timestamp) = getLatestPrice(roundId);
-            console.log("ratio: %s", ratio);
             if (ratio == 0) revert("Chainlink Contract not found");
             if (block.timestamp > timestamp && block.timestamp - timestamp > 2 * uint(deployer.getHeartBeat())) revert oldPrice();
             finalPrice = toNativePrice(product.paymentInfo.price, ratio);
