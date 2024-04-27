@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+
 import "../structs/structs.sol";
 
 
@@ -28,26 +29,45 @@ interface IShopPayment {
         uint256 affiliateId) external view returns (Product memory);
 }
 
+interface AggregatorV3Interface {
+    function getRoundData(uint80 _roundId)
+    external
+    view
+    returns (
+      uint80 roundId,
+      int256 answer,
+      uint256 startedAt,
+      uint256 updatedAt,
+      uint80 answeredInRound
+    );
+}
+
 /**
  * @title Droplinked Payment Proxy
  * @dev This contract provides a payment proxy system with chainlink price feeds for purchasing products.
  * It supports handling purchases with different payment methods and affiliate tracking.
  */
-contract DroplinkedPaymentProxy is Ownable{
+contract DroplinkedPaymentProxy is OwnableUpgradeable{
     
     /// @dev Error for reporting outdated price data.
     error oldPrice(uint256 priceTimestamp, uint256 currentTimestamp);
     
     /// @notice Time window for considering price data valid.
-    uint public heartBeat = 120;
+    uint public heartBeat;
 
     /// @notice Emitted when heartBeat is changed.
     event HeartBeatChanged(uint newHeartBeat);
     
-    AggregatorV3Interface internal immutable priceFeed =
-        AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
+    AggregatorV3Interface internal priceFeed;
         
-    constructor() Ownable(msg.sender) {}
+    function initialize(
+        uint256 _heartBeat,
+        address _chainLinkProvider
+    ) public initializer {
+        __Ownable_init(msg.sender);
+        heartBeat = _heartBeat;
+        priceFeed = AggregatorV3Interface(_chainLinkProvider);
+    }
     
     /// @param _heartBeat The new heartBeat to set.
     function changeHeartBeat(uint _heartBeat) external onlyOwner {

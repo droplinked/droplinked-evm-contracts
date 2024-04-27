@@ -7,14 +7,27 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {IDIP1, ShopInfo, Product, AffiliateRequest, NFTType, ProductType, PaymentMethodType, PaymentInfo, PaymentMethodType, Issuer} from "../interfaces/IDIP1.sol";
 import {BenficiaryManager, Beneficiary} from "./BeneficiaryManager.sol";
+import {console} from "hardhat/console.sol";
 
 interface Deployer {
     function getDroplinkedFee() external view returns (uint256);
     function getHeartBeat() external view returns (uint256);
     function droplinkedWallet() external view returns (address);
+}
+
+interface AggregatorV3Interface {
+    function getRoundData(uint80 _roundId)
+    external
+    view
+    returns (
+      uint80 roundId,
+      int256 answer,
+      uint256 startedAt,
+      uint256 updatedAt,
+      uint80 answeredInRound
+    );
 }
 
 interface DroplinkedToken1155 {
@@ -45,9 +58,7 @@ contract DropShop is
     uint256 public productCount;
     uint256 public affiliateRequestCount;
     Deployer public deployer;
-    AggregatorV3Interface internal immutable priceFeed =
-        AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
-
+    AggregatorV3Interface internal priceFeed;
 
     modifier notRequested(uint256 productId, address requester) {
         if (isRequestSubmited[productId][requester])
@@ -92,13 +103,15 @@ contract DropShop is
         address _shopOwner,
         string memory _shopLogo,
         string memory _shopDescription,
-        address _deployer
+        address _deployer,
+        address _chainLink
     ) Ownable(_shopOwner) {
         _shopInfo.shopName = _shopName;
         _shopInfo.shopAddress = _shopAddress;
         _shopInfo.shopOwner = _shopOwner;
         _shopInfo.shopLogo = _shopLogo;
         _shopInfo.shopDescription = _shopDescription;
+        priceFeed = AggregatorV3Interface(_chainLink);
         deployer = Deployer(_deployer);
     }
 
@@ -382,6 +395,7 @@ contract DropShop is
     // TODO : complete the purchase logic--------------------------------------------------------------------
 
     function getLatestPrice(uint80 roundId) internal view returns (uint, uint) {
+        console.log("price feed: %s", address(priceFeed));
         (, int256 price, , uint256 timestamp, ) = priceFeed.getRoundData(
             roundId
         );
@@ -471,7 +485,9 @@ contract DropShop is
         uint256 fee = deployer.getDroplinkedFee();
         if (product.paymentInfo.paymentType == PaymentMethodType.USD) {
             uint256 timestamp;
+            console.log("using chainlink");
             (ratio, timestamp) = getLatestPrice(roundId);
+            console.log("ratio: %s", ratio);
             if (ratio == 0) revert("Chainlink Contract not found");
             if (block.timestamp > timestamp && block.timestamp - timestamp > 2 * uint(deployer.getHeartBeat())) revert oldPrice();
             finalPrice = toNativePrice(product.paymentInfo.price, ratio);

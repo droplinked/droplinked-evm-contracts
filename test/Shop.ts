@@ -58,13 +58,15 @@ describe("Shop", function () {
 
     beforeEach(async function () {
         [owner, firstUser, secondUser, thirdUser, fourthUser] = await ethers.getSigners();
+        const ChainLink = await ethers.getContractFactory("chainLink");
+        const chainlink = await ChainLink.deploy();
         const Deployer = await ethers.getContractFactory("DropShopDeployer");
         deployer = await upgrades.deployProxy(Deployer,[120, secondUser.address, 100], {initializer: 'initialize'}) as any;
-        const constructorArgs = ["ShopName", "Los Angeles", owner.address, "https://127.0.0.1/lol.png", "Desc", await deployer.getAddress()];     
-        const bytecodeWithArgs = ethers.AbiCoder.defaultAbiCoder().encode(["string", "string", "address", "string", "string", "address"],constructorArgs);
+        const constructorArgs = ["ShopName", "Los Angeles", owner.address, "https://127.0.0.1/lol.png", "Desc", await deployer.getAddress(), await chainlink.getAddress()];     
+        const bytecodeWithArgs = ethers.AbiCoder.defaultAbiCoder().encode(["string", "string", "address", "string", "string", "address", "address"],constructorArgs);
         await deployer.connect(owner).deployShop(bytecode + bytecodeWithArgs.split("0x")[1], "0x0000000000000000000000000000000000000000000000000000000000000001");        
         const PaymentProxy = await ethers.getContractFactory("DroplinkedPaymentProxy");
-        paymentProxy = await PaymentProxy.deploy();
+        paymentProxy = await upgrades.deployProxy(PaymentProxy, [120, await chainlink.getAddress()], {initializer: 'initialize'}) as any;
         shopAddress = await deployer.shopAddresses(Number(await deployer.shopCount()) - 1);
         nftAddress = await deployer.nftContracts(Number(await deployer.shopCount()) - 1);
         nftContract = await ethers.getContractAt("DroplinkedToken", nftAddress);
