@@ -5,6 +5,7 @@
     "main": "index.js",
     "scripts": {
         "compile": "npx hardhat compile",
+        "test": "npx hardhat test",
         "deploy:bscTestnet": "npx hardhat run deploy/deploy.ts --network bscTestnet"
     },
     "repository": {

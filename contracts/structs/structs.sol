@@ -23,6 +23,7 @@ struct PaymentInfo {
     address currencyAddress;
     uint256[] beneficiaries;
     PaymentMethodType paymentType;
+    bool receiveUSDC;
 }
 
 struct Product {

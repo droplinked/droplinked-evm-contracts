@@ -5,13 +5,27 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { ISwapRouter } from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 
+interface IWETH {
+    function deposit() external payable;
+    function withdraw(uint256) external;
+    function balanceOf(address owner) external view returns (uint256);
+    function transfer(address to, uint256 value) external returns (bool);
+}
+
 contract FundsProxy is Ownable{
     ISwapRouter public router;
-    address public USDC; // USDC token address
+    address public USDC;
+    address public WETH;
 
-    constructor(address usdcTokenAddress, address routerAddress) Ownable(msg.sender) {
+    constructor(address usdcTokenAddress, address routerAddress, address nativeTokenWrapper) Ownable(msg.sender) {
         changeUSDCAddress(usdcTokenAddress);
         setRouter(routerAddress);
+        setWETHAddress(nativeTokenWrapper);
+    }
+
+    function setWETHAddress(address nativeTokenWrapper) onlyOwner public{
+        require(nativeTokenWrapper != address(0), "WETH address cannot be zero!");
+        WETH = nativeTokenWrapper;
     }
 
     function setRouter(address _router) public onlyOwner {
@@ -24,7 +38,18 @@ contract FundsProxy is Ownable{
         USDC = usdcTokenAddress;
     }
 
-    function convertAndSend(address tokenInput, address receiver) external {
+    function convertAndSend(address tokenInput, address receiver) external payable{
+        // conversion to wrapped etheruem for native tokens!
+        if (msg.value != 0 && tokenInput != address(0)){
+            // it put value and token input => panic
+            revert ("Can't swap 2 assets in 1 call");
+        }
+        
+        if (msg.value != 0){
+            tokenInput = WETH;
+            IWETH(WETH).deposit{value: msg.value}();
+        }
+        // start of swapping
         uint256 tokenAmount = IERC20(tokenInput).balanceOf(address(this));
         require(tokenAmount > 0, "Insufficient token balance.");
 

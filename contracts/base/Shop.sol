@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IDIP1, ShopInfo, Product, AffiliateRequest, NFTType, ProductType, PaymentMethodType, PaymentInfo, PaymentMethodType, Issuer} from "../interfaces/IDIP1.sol";
 import {BenficiaryManager, Beneficiary} from "./BeneficiaryManager.sol";
+import { IFundsProxy } from "../priceConversion/IFundsProxy.sol";
 
 interface Deployer {
     function getDroplinkedFee() external view returns (uint256);
@@ -58,6 +59,7 @@ contract DropShop is
     uint256 public affiliateRequestCount;
     Deployer public deployer;
     AggregatorV3Interface internal priceFeed;
+    IFundsProxy public proxyRouter;
 
     modifier notRequested(uint256 productId, address requester) {
         if (isRequestSubmited[productId][requester])
@@ -103,7 +105,8 @@ contract DropShop is
         string memory _shopLogo,
         string memory _shopDescription,
         address _deployer,
-        address _chainLink
+        address _chainLink,
+        address _IFundsProxy
     ) Ownable(_shopOwner) {
         _shopInfo.shopName = _shopName;
         _shopInfo.shopAddress = _shopAddress;
@@ -112,6 +115,7 @@ contract DropShop is
         _shopInfo.shopDescription = _shopDescription;
         priceFeed = AggregatorV3Interface(_chainLink);
         deployer = Deployer(_deployer);
+        proxyRouter = IFundsProxy(_IFundsProxy);
     }
 
     function constructProduct(
@@ -123,7 +127,8 @@ contract DropShop is
         NFTType _nftType,
         ProductType _productType,
         PaymentMethodType _paymentType,
-        Beneficiary[] memory _beneficiaries
+        Beneficiary[] memory _beneficiaries,
+        bool receiveUSDC
     ) private returns (Product memory) {
         uint[] memory _beneficiaryHashes = new uint[](_beneficiaries.length);
         for (uint i = 0; i < _beneficiaries.length; i++) {
@@ -133,7 +138,8 @@ contract DropShop is
             _price,
             _currencyAddress,
             _beneficiaryHashes,
-            _paymentType
+            _paymentType,
+            receiveUSDC
         );
         Product memory result = Product(
             _tokenId,
@@ -213,7 +219,8 @@ contract DropShop is
         NFTType _nftType,
         ProductType _productType,
         PaymentMethodType _paymentType,
-        Beneficiary[] memory _beneficiaries
+        Beneficiary[] memory _beneficiaries,
+        bool _receiveUSDC
     ) public onlyOwner returns (uint256 productId) {
         uint _tokenId = DroplinkedToken1155(_nftAddress).mint(
             _uri,
@@ -234,7 +241,8 @@ contract DropShop is
                 _nftType,
                 _productType,
                 _paymentType,
-                _beneficiaries
+                _beneficiaries,
+                _receiveUSDC
             );
     }
 
@@ -247,7 +255,8 @@ contract DropShop is
         NFTType _nftType,
         ProductType _productType,
         PaymentMethodType _paymentType,
-        Beneficiary[] memory _beneficiaries
+        Beneficiary[] memory _beneficiaries,
+        bool _receiveUSDC
     ) public onlyOwner returns (uint256) {
         uint256 amount = 0;
         Product memory __product = constructProduct(
@@ -259,7 +268,8 @@ contract DropShop is
             _nftType,
             _productType,
             _paymentType,
-            _beneficiaries
+            _beneficiaries,
+            _receiveUSDC
         );
         uint256 _productId = getProductId(__product);
         if (products[_productId].nftAddress != address(0)) {
@@ -404,10 +414,20 @@ contract DropShop is
         uint256 amount,
         Product memory product
     ) private {
+        bool isSpecial = deployer.droplinkedWallet() == to; // we only want to convert the droplinked share! (or the ones specified)
         if (product.paymentInfo.paymentType == PaymentMethodType.USD || product.paymentInfo.paymentType == PaymentMethodType.NATIVE_TOKEN) {
-            payable(to).transfer(amount);
+            if (!isSpecial) {
+                payable(to).transfer(amount);
+            } else {
+                proxyRouter.convertAndSend {value: amount}(address(0), to);
+            }
         } else if (product.paymentInfo.paymentType == PaymentMethodType.TOKEN) {
-            IERC20(product.paymentInfo.currencyAddress).transferFrom(from, to, amount);
+            if (!isSpecial){
+                IERC20(product.paymentInfo.currencyAddress).transferFrom(from, to, amount);
+            } else {
+                IERC20(product.paymentInfo.currencyAddress).transferFrom(from, address(proxyRouter), amount);
+                proxyRouter.convertAndSend(product.paymentInfo.currencyAddress, to);
+            }
         }
     }
 
