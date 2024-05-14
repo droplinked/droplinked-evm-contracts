@@ -54,21 +54,6 @@ enum ProductType {
     PHYSICAL
 }
 
-struct Coupon {
-    bool isPercentage;
-    uint value;
-    uint secretHash;
-    address couponProducer;
-}
-
-struct CouponProof {
-    uint256[2] _pA;
-    uint256[2][2] _pB;
-    uint256[2] _pC;
-    uint256[3] _pubSignals;
-    bool provided;
-}
-
 struct Issuer {
     address issuer;
     uint royalty;

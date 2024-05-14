@@ -43,7 +43,7 @@ contract DropShopDeployer is Initializable, OwnableUpgradeable {
 
     function deployShop(
         bytes memory bytecode, bytes32 salt
-    ) external onlyOwner returns (address shop, address nftContract) {
+    ) external returns (address shop, address nftContract) {
         address deployedShop;
         IDropShop _shop;
         assembly {

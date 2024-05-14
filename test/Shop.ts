@@ -620,7 +620,7 @@ describe("Shop", function () {
                     isAffiliate: false,
                     shopAddress: await shopContract.getAddress()
                 }
-            ], "0x0000000000000000000000000000000000000000", 0, {value: ethers.parseEther("23")});
+            ], "0x0000000000000000000000000000000000000000", 0, '', {value: ethers.parseEther("23")});
             expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
             expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
             const producerAfterBalance = await ethers.provider.getBalance(owner);
@@ -681,7 +681,7 @@ describe("Shop", function () {
                     isAffiliate: true,
                     shopAddress: await shopContract.getAddress()
                 }
-            ], await fakeToken.getAddress(), 0);
+            ], await fakeToken.getAddress(), 0, '');
             expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
             expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
             const producerAfterBalance = await fakeToken.balanceOf(owner);
@@ -720,7 +720,7 @@ describe("Shop", function () {
                     isAffiliate: false,
                     shopAddress: await shopContract.getAddress()
                 }
-            ], "0x0000000000000000000000000000000000000001", 0, {value: ethers.parseEther("23")});
+            ], "0x0000000000000000000000000000000000000001", 0, '', {value: ethers.parseEther("23")});
             expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
             expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
             const producerAfterBalance = await ethers.provider.getBalance(owner);
@@ -771,7 +771,7 @@ describe("Shop", function () {
                     isAffiliate: false,
                     shopAddress: await shopContract.getAddress()
                 }
-            ], "0x0000000000000000000000000000000000000000", 0, { value: ethers.parseEther("23") });
+            ], "0x0000000000000000000000000000000000000000", 0, '', { value: ethers.parseEther("23") });
             
             await paymentProxy.connect(firstUser).droplinkedPurchase([], [], [
                 {
@@ -780,7 +780,7 @@ describe("Shop", function () {
                     isAffiliate: false,
                     shopAddress: await shopContract.getAddress()
                 }
-            ], "0x0000000000000000000000000000000000000000", 0, { value: ethers.parseEther("23") });
+            ], "0x0000000000000000000000000000000000000000", 0, '', { value: ethers.parseEther("23") });
             expect(await nftContract.balanceOf(firstUser.address, 1)).to.equal(1);
             expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(999);
             const producerAfterBalance = await ethers.provider.getBalance(owner);

@@ -57,9 +57,12 @@ contract DroplinkedPaymentProxy is OwnableUpgradeable{
 
     /// @notice Emitted when heartBeat is changed.
     event HeartBeatChanged(uint newHeartBeat);
-    
+
     AggregatorV3Interface internal priceFeed;
         
+    
+    event ProductPurchased(string memo);
+
     function initialize(
         uint256 _heartBeat,
         address _chainLinkProvider
@@ -132,7 +135,7 @@ contract DroplinkedPaymentProxy is OwnableUpgradeable{
      * @param currency The currency used for the purchase.
      * @param roundId The Chainlink round ID for price data.
      */
-    function droplinkedPurchase(uint[] memory tbdValues, address[] memory tbdReceivers, PurchaseData[] memory cartItems, address currency, uint80 roundId) external payable {
+    function droplinkedPurchase(uint[] memory tbdValues, address[] memory tbdReceivers, PurchaseData[] memory cartItems, address currency, uint80 roundId, string memory memo) external payable {
         uint ratio = 0;
         if (currency == address(0)){
             uint256 timestamp;
@@ -158,6 +161,7 @@ contract DroplinkedPaymentProxy is OwnableUpgradeable{
             transferPayment(finalPrice, currency, shopAddress);
             purchaseProduct(finalPrice, id, isAffiliate, amount, roundId, shopAddress, currency);
         }
+        emit ProductPurchased(memo);
     }
 
     function calculateFinalPrice(uint price, uint amount, address currency, uint ratio) private pure returns (uint) {

@@ -2,8 +2,8 @@ import { ethers, upgrades } from 'hardhat';
 
 async function main() {
     const heartBeat = 3600;
-    const chainLinkAddress = "0x694AA1769357215DE4FAC081bf1f309aDC325306";
-    const droplinkedWallet = "0x60380cDcF09c9B6333fFC154AB7507482fAcF56a";
+    const chainLinkAddress = "0x2514895c72f50D8bd4B4F9b1110F0D6bD2c97526";
+    const droplinkedWallet = "0x47a8378243f702143775a0AD75DD629935DA8AFf";
     const droplinkedFee = 100;
     const DropShopDeployer = await ethers.getContractFactory("DropShopDeployer");
     const deployer = await upgrades.deployProxy(DropShopDeployer, [heartBeat, droplinkedWallet, droplinkedFee], {initializer: 'initialize'});

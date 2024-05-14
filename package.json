@@ -4,7 +4,8 @@
     "description": "droplinked contracts refactored",
     "main": "index.js",
     "scripts": {
-        "compile": "npx hardhat compile"
+        "compile": "npx hardhat compile",
+        "deploy:bscTestnet": "npx hardhat run deploy/deploy.ts --network bscTestnet"
     },
     "repository": {
         "type": "git",
