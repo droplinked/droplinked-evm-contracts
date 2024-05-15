@@ -414,7 +414,7 @@ contract DropShop is
         uint256 amount,
         Product memory product
     ) private {
-        bool isSpecial = deployer.droplinkedWallet() == to; // we only want to convert the droplinked share! (or the ones specified)
+        bool isSpecial = product.paymentInfo.receiveUSDC || deployer.droplinkedWallet() == to; // we only want to convert the droplinked share! (or the ones specified)
         if (product.paymentInfo.paymentType == PaymentMethodType.USD || product.paymentInfo.paymentType == PaymentMethodType.NATIVE_TOKEN) {
             if (!isSpecial) {
                 payable(to).transfer(amount);
