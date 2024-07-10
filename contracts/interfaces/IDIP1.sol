@@ -51,20 +51,9 @@ interface IDIP1 {
     function getShopLogo() external view returns (string memory);
     function getShopDescription() external view returns (string memory);
     function mintAndRegister(
-        address _nftAddress,
-        string memory _uri,
-        uint256 amount,
-        bool accepted,
-        uint256 _affiliatePercentage,
-        uint256 _price,
-        address _currencyAddress,
-        uint256 _royalty,
-        NFTType _nftType,
-        ProductType _productType,
-        PaymentMethodType _paymentType,
-        Beneficiary[] memory _beneficiaries,
-        bool _receiveUSDC
+        RecordData memory mintData
     ) external returns (uint256 productId);
+    function mintAndRegisterBatch(RecordData[] memory recordData) external;
     function getProduct(
         uint256 productId
     ) external view returns (Product memory);

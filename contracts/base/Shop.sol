@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {IDIP1, ShopInfo, Product, AffiliateRequest, NFTType, ProductType, PaymentMethodType, PaymentInfo, PaymentMethodType, Issuer} from "../interfaces/IDIP1.sol";
+import {IDIP1, ShopInfo, Product, AffiliateRequest, NFTType, ProductType, PaymentMethodType, PaymentInfo, PaymentMethodType, Issuer, RecordData} from "../interfaces/IDIP1.sol";
 import {BenficiaryManager, Beneficiary} from "./BeneficiaryManager.sol";
 import { IFundsProxy } from "../priceConversion/IFundsProxy.sol";
 
@@ -207,42 +207,36 @@ contract DropShop is
         return products[productId].paymentInfo;
     }
 
+    function mintAndRegisterBatch(RecordData[] memory recordData) public onlyOwner{
+        for (uint i = 0; i < recordData.length; i++){
+            mintAndRegister(recordData[i]);
+        }
+    }
+
     function mintAndRegister(
-        address _nftAddress,
-        string memory _uri,
-        uint256 _amount,
-        bool _accepted,
-        uint256 _affiliatePercentage,
-        uint256 _price,
-        address _currencyAddress,
-        uint256 _royalty,
-        NFTType _nftType,
-        ProductType _productType,
-        PaymentMethodType _paymentType,
-        Beneficiary[] memory _beneficiaries,
-        bool _receiveUSDC
+        RecordData memory mintData
     ) public onlyOwner returns (uint256 productId) {
-        uint _tokenId = DroplinkedToken1155(_nftAddress).mint(
-            _uri,
-            _amount,
+        uint _tokenId = DroplinkedToken1155(mintData._nftAddress).mint(
+            mintData._uri,
+            mintData._amount,
             msg.sender,
-            _royalty,
-            _accepted
+            mintData._royalty,
+            mintData._accepted
         );
 
         // register the product
         return
             registerProduct(
                 _tokenId,
-                _nftAddress,
-                _affiliatePercentage,
-                _price,
-                _currencyAddress,
-                _nftType,
-                _productType,
-                _paymentType,
-                _beneficiaries,
-                _receiveUSDC
+                mintData._nftAddress,
+                mintData._affiliatePercentage,
+                mintData._price,
+                mintData._currencyAddress,
+                mintData._nftType,
+                mintData._productType,
+                mintData._paymentType,
+                mintData._beneficiaries,
+                mintData._receiveUSDC
             );
     }
 

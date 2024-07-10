@@ -66,3 +66,19 @@ struct PurchaseData {
     bool isAffiliate;
     address shopAddress;
 }
+
+struct RecordData {
+    address _nftAddress;
+    string _uri;
+    uint256 _amount;
+    bool _accepted;
+    uint256 _affiliatePercentage;
+    uint256 _price;
+    address _currencyAddress;
+    uint256 _royalty;
+    NFTType _nftType;
+    ProductType _productType;
+    PaymentMethodType _paymentType;
+    Beneficiary[] _beneficiaries;
+    bool _receiveUSDC;
+}
