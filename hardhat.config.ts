@@ -14,9 +14,29 @@ const config: HardhatUserConfig = {
       gasPrice: 20000000000,
       accounts: [process.env.PRIVATE_KEY as string]
     },
+    bsc: {
+      url: "https://bsc-dataseed.binance.org/",
+      chainId: 56,
+      accounts: [process.env.PRIVATE_KEY as string]
+    },
     polygonAmoy:{
       url: "https://rpc-amoy.polygon.technology",
       chainId: 80002,
+      accounts: [process.env.PRIVATE_KEY as string]
+    },
+    polygon: {
+      url: "https://polygon-rpc.com/",
+      chainId: 137,
+      accounts: [process.env.PRIVATE_KEY as string]
+    },
+    linea: {
+      url: "https://1rpc.io/linea",
+      chainId: 59144,
+      accounts: [process.env.PRIVATE_KEY as string],
+    },
+    base: {
+      url: "https://mainnet.base.org/",
+      chainId: 8453,
       accounts: [process.env.PRIVATE_KEY as string]
     },
     sepolia:{
@@ -38,7 +58,11 @@ const config: HardhatUserConfig = {
   etherscan:{
     apiKey:{
       bscTestnet: (process.env.BINANCE_API_KEY) as string,
+      bsc: (process.env.BINANCE_API_KEY) as string,
       polygonAmoy: (process.env.POLYGON_API_KEY) as string,
+      polygon: (process.env.POLYGON_API_KEY) as string,
+      base: (process.env.BASE_API_KEY) as string,
+      linea: (process.env.LINEA_API_KEY) as string,
     },
     customChains:[
       {
@@ -48,7 +72,15 @@ const config: HardhatUserConfig = {
           apiURL: "https://www.oklink.com/api/explorer/v1/contract/verify/async/api/polygonAmoy",
           browserURL: "https://www.oklink.com/polygonAmoy"
         },
-      }
+      },
+      {
+        network: "linea",
+        chainId: 59144,
+        urls: {
+          apiURL: "https://api.lineascan.build/api",
+          browserURL: "https://goerli.lineascan.build/",
+        }
+      },
     ]
   },
 };
