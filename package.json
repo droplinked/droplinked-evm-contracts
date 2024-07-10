@@ -6,7 +6,12 @@
     "scripts": {
         "compile": "npx hardhat compile",
         "test": "npx hardhat test",
-        "deploy:bscTestnet": "npx hardhat run deploy/deploy.ts --network bscTestnet"
+        "deploy:bscTestnet": "npx hardhat run deploy/deploy.ts --network bscTestnet",
+        "deploy:bsc": "npx hardhat run deploy/deploy.ts --network bsc",
+        "deploy:base": "npx hardhat run deploy/deploy.ts --network base",
+        "deploy:linea": "npx hardhat run deploy/deploy.ts --network linea",
+        "deploy:polygon": "npx hardhat run deploy/deploy.ts --network polygon",
+        "deploy:bedi": "npx hardhat run deploy/deployBedi.ts --network base"
     },
     "repository": {
         "type": "git",
