@@ -16,11 +16,18 @@ contract FundsProxy is Ownable{
     ISwapRouter public router;
     address public USDC;
     address public WETH;
+    mapping (address tokenIn => uint24 poolFee) public poolFees;
+
 
     constructor(address usdcTokenAddress, address routerAddress, address nativeTokenWrapper) Ownable(msg.sender) {
         changeUSDCAddress(usdcTokenAddress);
         setRouter(routerAddress);
         setWETHAddress(nativeTokenWrapper);
+        poolFees[0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c] = 100;
+    }
+
+    function setPoolFeeForToken(address tokenIn, uint24 poolFee) onlyOwner public{
+        poolFees[tokenIn] = poolFee;
     }
 
     function setWETHAddress(address nativeTokenWrapper) onlyOwner public{
@@ -38,7 +45,7 @@ contract FundsProxy is Ownable{
         USDC = usdcTokenAddress;
     }
 
-    function convertAndSend(address tokenInput, address receiver) external payable{
+    function convertAndSend(address tokenInput, address receiver) public payable{
         // conversion to wrapped etheruem for native tokens!
         if (msg.value != 0 && tokenInput != address(0)){
             // it put value and token input => panic
@@ -49,6 +56,7 @@ contract FundsProxy is Ownable{
             tokenInput = WETH;
             IWETH(WETH).deposit{value: msg.value}();
         }
+
         // start of swapping
         uint256 tokenAmount = IERC20(tokenInput).balanceOf(address(this));
         require(tokenAmount > 0, "Insufficient token balance.");
@@ -59,11 +67,11 @@ contract FundsProxy is Ownable{
         ISwapRouter.ExactInputSingleParams memory params = ISwapRouter.ExactInputSingleParams({
             tokenIn: tokenInput,
             tokenOut: USDC,
-            fee: 3000, // Pool fee (0.3% for most pools)
+            fee: poolFees[tokenInput],
             recipient: receiver,
-            deadline: block.timestamp,
+            deadline: block.timestamp + 1,
             amountIn: tokenAmount,
-            amountOutMinimum: 0, // Consider specifying minimum amount out
+            amountOutMinimum: 0,
             sqrtPriceLimitX96: 0
         });
 
