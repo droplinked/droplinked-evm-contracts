@@ -8,6 +8,11 @@ require("dotenv").config();
 
 const config: HardhatUserConfig = {
   networks: {
+    ethereumMainnet:{
+      url: "https://mainnet.infura.io/v3/55bd630c4e164c04bb27fff3f59babb0",
+      chainId: 1,
+      accounts: [process.env.PRIVATE_KEY as string]
+    },
     bscTestnet:{
       url: "https://data-seed-prebsc-1-s1.binance.org:8545",
       chainId: 97,
@@ -63,6 +68,7 @@ const config: HardhatUserConfig = {
       polygon: (process.env.POLYGON_API_KEY) as string,
       base: (process.env.BASE_API_KEY) as string,
       linea: (process.env.LINEA_API_KEY) as string,
+      ethereumMainnet: (process.env.ETH_API_KEY) as string
     },
     customChains:[
       {
