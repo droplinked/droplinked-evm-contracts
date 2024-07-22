@@ -1,6 +1,7 @@
 {
     "solidity.compileUsingRemoteVersion": "v0.8.20+commit.a1b79de6",
     "cSpell.words": [
+        "Bedi",
         "beneficaries",
         "Droplinked",
         "ipfs",
