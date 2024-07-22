@@ -20,6 +20,14 @@ interface IDIP1 {
         uint256 amount,
         address indexed owner
     );
+
+    event ProductMinted(
+        uint256 indexed productId,
+        uint256 amount,
+        address indexed owner,
+        string uri
+    );
+
     event ProductUnregistered(uint256 indexed productId, address indexed owner);
     event AffiliateRequested(
         uint256 indexed requestId,
@@ -44,6 +52,8 @@ interface IDIP1 {
         address indexed buyer,
         uint256 amount
     );
+
+
 
     function getShopName() external view returns (string memory);
     function getShopAddress() external view returns (string memory);

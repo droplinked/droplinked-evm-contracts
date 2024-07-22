@@ -225,7 +225,7 @@ contract DropShop is
         );
 
         // register the product
-        return
+        uint registeredProductId =
             registerProduct(
                 _tokenId,
                 mintData._nftAddress,
@@ -238,6 +238,9 @@ contract DropShop is
                 mintData._beneficiaries,
                 mintData._receiveUSDC
             );
+        
+        emit ProductMinted(registeredProductId, mintData._amount, msg.sender, mintData._uri);
+        return registeredProductId;
     }
 
     function registerProduct(
