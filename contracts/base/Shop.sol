@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IDIP1, ShopInfo, Product, AffiliateRequest, NFTType, ProductType, PaymentMethodType, PaymentInfo, PaymentMethodType, Issuer, RecordData} from "../interfaces/IDIP1.sol";
 import {BenficiaryManager, Beneficiary} from "./BeneficiaryManager.sol";
-import { IFundsProxy } from "../priceConversion/IFundsProxy.sol";
+import {IFundsProxy} from "../priceConversion/IFundsProxy.sol";
 
 interface Deployer {
     function getDroplinkedFee() external view returns (uint256);
@@ -18,16 +18,18 @@ interface Deployer {
 }
 
 interface AggregatorV3Interface {
-    function getRoundData(uint80 _roundId)
-    external
-    view
-    returns (
-      uint80 roundId,
-      int256 answer,
-      uint256 startedAt,
-      uint256 updatedAt,
-      uint80 answeredInRound
-    );
+    function getRoundData(
+        uint80 _roundId
+    )
+        external
+        view
+        returns (
+            uint80 roundId,
+            int256 answer,
+            uint256 startedAt,
+            uint256 updatedAt,
+            uint80 answeredInRound
+        );
 }
 
 interface DroplinkedToken1155 {
@@ -160,10 +162,10 @@ contract DropShop is
     }
 
     function getProductIdV2(
-        address nftAddress, uint256 tokenId
+        address nftAddress,
+        uint256 tokenId
     ) public pure returns (uint256) {
-        return
-            uint256(keccak256(abi.encode(nftAddress, tokenId)));
+        return uint256(keccak256(abi.encode(nftAddress, tokenId)));
     }
 
     function getShopName() external view returns (string memory) {
@@ -193,7 +195,8 @@ contract DropShop is
     }
 
     function getProductViaAffiliateId(
-        uint256 affiliateId) external view returns (Product memory) {
+        uint256 affiliateId
+    ) external view returns (Product memory) {
         return products[affiliateRequests[affiliateId].productId];
     }
 
@@ -207,8 +210,10 @@ contract DropShop is
         return products[productId].paymentInfo;
     }
 
-    function mintAndRegisterBatch(RecordData[] memory recordData) public onlyOwner{
-        for (uint i = 0; i < recordData.length; i++){
+    function mintAndRegisterBatch(
+        RecordData[] memory recordData
+    ) public onlyOwner {
+        for (uint i = 0; i < recordData.length; i++) {
             mintAndRegister(recordData[i]);
         }
     }
@@ -225,21 +230,25 @@ contract DropShop is
         );
 
         // register the product
-        uint registeredProductId =
-            registerProduct(
-                _tokenId,
-                mintData._nftAddress,
-                mintData._affiliatePercentage,
-                mintData._price,
-                mintData._currencyAddress,
-                mintData._nftType,
-                mintData._productType,
-                mintData._paymentType,
-                mintData._beneficiaries,
-                mintData._receiveUSDC
-            );
-        
-        emit ProductMinted(registeredProductId, mintData._amount, msg.sender, mintData._uri);
+        uint registeredProductId = registerProduct(
+            _tokenId,
+            mintData._nftAddress,
+            mintData._affiliatePercentage,
+            mintData._price,
+            mintData._currencyAddress,
+            mintData._nftType,
+            mintData._productType,
+            mintData._paymentType,
+            mintData._beneficiaries,
+            mintData._receiveUSDC
+        );
+
+        emit ProductRegistered(
+            registeredProductId,
+            mintData._amount,
+            msg.sender,
+            mintData._uri
+        );
         return registeredProductId;
     }
 
@@ -298,7 +307,6 @@ contract DropShop is
                 );
                 if (!receivedProduct) revert("NFT not received");
             }
-            emit ProductRegistered(_productId, amount, msg.sender);
             return _productId;
         }
 
@@ -328,7 +336,6 @@ contract DropShop is
             );
             if (!receivedProduct) revert("NFT not received");
         }
-        emit ProductRegistered(_productId, amount, msg.sender);
         return _productId;
     }
 
@@ -411,19 +418,34 @@ contract DropShop is
         uint256 amount,
         Product memory product
     ) private {
-        bool isSpecial = product.paymentInfo.receiveUSDC || deployer.droplinkedWallet() == to; // we only want to convert the droplinked share! (or the ones specified)
-        if (product.paymentInfo.paymentType == PaymentMethodType.USD || product.paymentInfo.paymentType == PaymentMethodType.NATIVE_TOKEN) {
+        bool isSpecial = product.paymentInfo.receiveUSDC ||
+            deployer.droplinkedWallet() == to; // we only want to convert the droplinked share! (or the ones specified)
+        if (
+            product.paymentInfo.paymentType == PaymentMethodType.USD ||
+            product.paymentInfo.paymentType == PaymentMethodType.NATIVE_TOKEN
+        ) {
             if (!isSpecial) {
                 payable(to).transfer(amount);
             } else {
-                proxyRouter.convertAndSend {value: amount}(address(0), to);
+                proxyRouter.convertAndSend{value: amount}(address(0), to);
             }
         } else if (product.paymentInfo.paymentType == PaymentMethodType.TOKEN) {
-            if (!isSpecial){
-                IERC20(product.paymentInfo.currencyAddress).transferFrom(from, to, amount);
+            if (!isSpecial) {
+                IERC20(product.paymentInfo.currencyAddress).transferFrom(
+                    from,
+                    to,
+                    amount
+                );
             } else {
-                IERC20(product.paymentInfo.currencyAddress).transferFrom(from, address(proxyRouter), amount);
-                proxyRouter.convertAndSend(product.paymentInfo.currencyAddress, to);
+                IERC20(product.paymentInfo.currencyAddress).transferFrom(
+                    from,
+                    address(proxyRouter),
+                    amount
+                );
+                proxyRouter.convertAndSend(
+                    product.paymentInfo.currencyAddress,
+                    to
+                );
             }
         }
     }
@@ -458,9 +480,11 @@ contract DropShop is
             } else {
                 // value based beneficiary, convert to eth and transfer
                 if (product.paymentInfo.paymentType == PaymentMethodType.USD) {
-                    __beneficiaryShare = toNativePrice(_beneficiary.value, ratio);
-                }
-                else {
+                    __beneficiaryShare = toNativePrice(
+                        _beneficiary.value,
+                        ratio
+                    );
+                } else {
                     __beneficiaryShare = _beneficiary.value * amount;
                 }
             }
@@ -475,10 +499,16 @@ contract DropShop is
         return __producerShare;
     }
 
-    function purchaseProductFor(address receiver, uint256 id, bool isAffiliate, uint256 amount, uint80 roundId) public payable {
+    function purchaseProductFor(
+        address receiver,
+        uint256 id,
+        bool isAffiliate,
+        uint256 amount,
+        uint80 roundId
+    ) public payable {
         address publisher = address(0);
         Product memory product;
-        if (isAffiliate){
+        if (isAffiliate) {
             product = products[affiliateRequests[id].productId];
             publisher = affiliateRequests[id].publisher;
         } else {
@@ -486,12 +516,31 @@ contract DropShop is
         }
         if (product.nftType == NFTType.ERC1155) {
             if (amount == 0) revert("Invalid amount");
-            if (IERC1155(product.nftAddress).balanceOf(address(this), product.tokenId) < amount) revert NotEnoughTokens(product.tokenId, address(this));
-            IERC1155(product.nftAddress).safeTransferFrom(address(this), receiver, product.tokenId, amount, "");
+            if (
+                IERC1155(product.nftAddress).balanceOf(
+                    address(this),
+                    product.tokenId
+                ) < amount
+            ) revert NotEnoughTokens(product.tokenId, address(this));
+            IERC1155(product.nftAddress).safeTransferFrom(
+                address(this),
+                receiver,
+                product.tokenId,
+                amount,
+                ""
+            );
         } else {
             if (amount != 1) revert("Invalid amount");
-            if (IERC721(product.nftAddress).ownerOf(product.tokenId) != address(this)) revert ShopDoesNotOwnToken(product.tokenId, product.nftAddress);
-            IERC721(product.nftAddress).safeTransferFrom(address(this), receiver, product.tokenId, "");
+            if (
+                IERC721(product.nftAddress).ownerOf(product.tokenId) !=
+                address(this)
+            ) revert ShopDoesNotOwnToken(product.tokenId, product.nftAddress);
+            IERC721(product.nftAddress).safeTransferFrom(
+                address(this),
+                receiver,
+                product.tokenId,
+                ""
+            );
         }
         uint256 finalPrice = product.paymentInfo.price;
         uint256 ratio = 0;
@@ -500,23 +549,44 @@ contract DropShop is
             uint256 timestamp;
             (ratio, timestamp) = getLatestPrice(roundId);
             if (ratio == 0) revert("Chainlink Contract not found");
-            if (block.timestamp > timestamp && block.timestamp - timestamp > 2 * uint(deployer.getHeartBeat())) revert oldPrice();
+            if (
+                block.timestamp > timestamp &&
+                block.timestamp - timestamp > 2 * uint(deployer.getHeartBeat())
+            ) revert oldPrice();
             finalPrice = toNativePrice(product.paymentInfo.price, ratio);
         }
         finalPrice = finalPrice * amount;
-        Issuer memory issuer = DroplinkedToken1155(product.nftAddress).issuers(product.tokenId);
+        Issuer memory issuer = DroplinkedToken1155(product.nftAddress).issuers(
+            product.tokenId
+        );
         uint __royaltyShare = applyPercentage(finalPrice, issuer.royalty);
-        uint __publisherShare = isAffiliate? applyPercentage(finalPrice, product.affiliatePercentage): 0;
+        uint __publisherShare = isAffiliate
+            ? applyPercentage(finalPrice, product.affiliatePercentage)
+            : 0;
         uint __producerShare = finalPrice;
         uint __droplinkedShare = applyPercentage(finalPrice, fee);
-        paymentHelper(msg.sender, deployer.droplinkedWallet(), __droplinkedShare, product);
+        paymentHelper(
+            msg.sender,
+            deployer.droplinkedWallet(),
+            __droplinkedShare,
+            product
+        );
         paymentHelper(msg.sender, issuer.issuer, __royaltyShare, product);
-        if (isAffiliate){
+        if (isAffiliate) {
             paymentHelper(msg.sender, publisher, __publisherShare, product);
         }
-        __producerShare -= (__royaltyShare + __droplinkedShare + __publisherShare);
+        __producerShare -= (__royaltyShare +
+            __droplinkedShare +
+            __publisherShare);
         uint[] memory beneficiaryHashes = product.paymentInfo.beneficiaries;
-        __producerShare = _payBeneficiaries(beneficiaryHashes, finalPrice, amount, __producerShare, ratio, product);
+        __producerShare = _payBeneficiaries(
+            beneficiaryHashes,
+            finalPrice,
+            amount,
+            __producerShare,
+            ratio,
+            product
+        );
         paymentHelper(msg.sender, owner(), __producerShare, product);
     }
 
