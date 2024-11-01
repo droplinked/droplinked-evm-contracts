@@ -154,14 +154,12 @@ contract DroplinkedPaymentProxy is Ownable {
      * @dev Processes a batch of purchases, transferring the required funds and making the product purchase calls.
      * @param tbdValues Values of products to be transferred.
      * @param tbdReceivers Receivers of the payments.
-     * @param cartItems List of items being purchased.
      * @param currency The currency used for the purchase.
      * @param roundId The Chainlink round ID for price data.
      */
     function droplinkedPurchase(
         uint[] memory tbdValues,
         address[] memory tbdReceivers,
-        PurchaseData[] memory cartItems,
         address currency,
         uint80 roundId,
         string memory memo
@@ -178,35 +176,6 @@ contract DroplinkedPaymentProxy is Ownable {
         }
         transferTBDValues(tbdValues, tbdReceivers, ratio, currency);
         // note: we can't have multiple products with different payment methods in the same purchase!
-        for (uint i = 0; i < cartItems.length; i++) {
-            uint id = cartItems[i].id;
-            bool isAffiliate = cartItems[i].isAffiliate;
-            uint amount = cartItems[i].amount;
-            address shopAddress = cartItems[i].shopAddress;
-            IShopPayment cartItemShop = IShopPayment(shopAddress);
-            Product memory product;
-            if (isAffiliate) {
-                product = cartItemShop.getProductViaAffiliateId(id);
-            } else {
-                product = cartItemShop.getProduct(id);
-            }
-            uint finalPrice = calculateFinalPrice(
-                product.paymentInfo.price,
-                amount,
-                currency,
-                ratio
-            );
-            transferPayment(finalPrice, currency, shopAddress);
-            purchaseProduct(
-                finalPrice,
-                id,
-                isAffiliate,
-                amount,
-                roundId,
-                shopAddress,
-                currency
-            );
-        }
         emit ProductPurchased(memo);
     }
 

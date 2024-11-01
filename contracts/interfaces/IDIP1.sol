@@ -14,6 +14,8 @@ interface IDIP1 {
     error AffiliatePOD();
     error NotEnoughTokens(uint256 tokenId, address producer);
     error ShopDoesNotOwnToken(uint256 tokenId, address nftAddress);
+    error AccessDenied();
+    error AlreadyClaimed();
 
     event ProductRegistered(
         uint256 indexed productId,
@@ -37,14 +39,10 @@ interface IDIP1 {
         uint256 indexed requestId,
         address indexed disapprover
     );
-    event ProductPurchased(
+
+    event ProductClaimed(
         uint256 indexed productId,
-        address indexed buyer,
-        uint256 amount
-    );
-    event AffiliatePurchase(
-        uint256 indexed requestId,
-        address indexed buyer,
+        address indexed claimer,
         uint256 amount
     );
 
@@ -64,20 +62,12 @@ interface IDIP1 {
     function getProductId(
         Product memory product
     ) external pure returns (uint256);
-    function getPaymentInfo(
-        uint256 productId
-    ) external view returns (PaymentInfo memory);
     function registerProduct(
         uint256 _tokenId,
         address _nftAddress,
         uint256 _affiliatePercentage,
-        uint256 _price,
-        address _currencyAddress,
         NFTType _nftType,
-        ProductType _productType,
-        PaymentMethodType _paymentType,
-        Beneficiary[] memory _beneficiaries,
-        bool _recieveUSDC
+        ProductType _productType
     ) external returns (uint256);
     function unregisterProduct(uint256 productId) external;
     function requestAffiliate(uint256 productId) external returns (uint256);
@@ -87,17 +77,4 @@ interface IDIP1 {
         uint256 requestId
     ) external view returns (AffiliateRequest memory);
     function getAffiliateRequestCount() external view returns (uint256);
-    function purchaseProductFor(
-        address receiver,
-        uint256 id,
-        bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
-    ) external payable;
-    function purchaseProduct(
-        uint256 id,
-        bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
-    ) external payable;
 }
