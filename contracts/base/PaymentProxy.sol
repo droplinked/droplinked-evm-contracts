@@ -175,7 +175,6 @@ contract DroplinkedPaymentProxy is Ownable {
             ) revert oldPrice(timestamp, block.timestamp);
         }
         transferTBDValues(tbdValues, tbdReceivers, ratio, currency);
-        // note: we can't have multiple products with different payment methods in the same purchase!
         emit ProductPurchased(memo);
     }
 

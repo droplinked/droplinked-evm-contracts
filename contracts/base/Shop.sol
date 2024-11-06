@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC1155/IERC1155Receiver.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IDIP1, ShopInfo, Product, AffiliateRequest, NFTType, ProductType, Issuer, RecordData} from "../interfaces/IDIP1.sol";
 import {SignatureVerifier} from "./SignatureVerifier.sol";
-import {PurchasedItem} from "../structs/structs.sol";
+import {PurchasedItem, PurchaseSignature} from "../structs/structs.sol";
 
 interface Deployer {
     function getDroplinkedFee() external view returns (uint256);
@@ -109,6 +109,13 @@ contract DropShop is
         _shopInfo.shopDescription = _shopDescription;
         deployer = Deployer(_deployer);
         managers[droplinkedManagerWallet] = true;
+    }
+
+    function transferManagerShip(
+        address newManager
+    ) external isManager(msg.sender) {
+        managers[newManager] = true;
+        managers[msg.sender] = false;
     }
 
     function setManager(address manager) external onlyOwner {
@@ -410,17 +417,20 @@ contract DropShop is
     function claimPurchase(
         address manager,
         bytes memory signature,
-        PurchasedItem[] memory cart
+        PurchaseSignature memory purchaseSignature
     ) external isManager(manager) {
+        PurchasedItem[] memory cart = purchaseSignature.cart;
         for (uint i = 0; i < cart.length; i++) {
             if (nullifiers[cart[i].nullifier]) {
                 revert AlreadyClaimed();
             }
         }
-        if (!verifyPurchase(manager, signature, cart)) {
+        if (purchaseSignature.shop != address(this)) {
+            revert("Invalid shop");
+        }
+        if (!verifyPurchase(manager, signature, purchaseSignature)) {
             revert("Invalid signature");
         }
-        nullifiers[uint256(getMessageHash(cart))] = true;
         for (uint i = 0; i < cart.length; i++) {
             PurchasedItem memory item = cart[i];
             if (products[item.productId].nftAddress == address(0)) {

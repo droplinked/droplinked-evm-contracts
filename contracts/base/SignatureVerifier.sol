@@ -7,7 +7,7 @@ contract SignatureVerifier {
     function verifyPurchase(
         address signer,
         bytes memory signature,
-        PurchasedItem[] memory data
+        PurchaseSignature memory data
     ) public pure returns (bool) {
         bytes32 messageHash = getMessageHash(data);
         bytes32 ethSignedMessageHash = getEthSignedMessageHash(messageHash);
@@ -17,7 +17,7 @@ contract SignatureVerifier {
     }
 
     function getMessageHash(
-        PurchasedItem[] memory data
+        PurchaseSignature memory data
     ) public pure returns (bytes32) {
         // Encode the array of structs using abi.encode
         return keccak256(abi.encode(data));

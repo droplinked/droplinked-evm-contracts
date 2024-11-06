@@ -55,3 +55,8 @@ struct PurchasedItem {
     uint256 productId;
     uint256 nullifier;
 }
+
+struct PurchaseSignature {
+    PurchasedItem[] cart;
+    address shop;
+}

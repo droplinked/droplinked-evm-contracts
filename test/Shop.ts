@@ -412,21 +412,27 @@ describe('Shop', function () {
 				},
 			];
 			const types = [
-				'tuple(uint256 amount, uint256 productId, uint256 nullifier)[]',
+				'tuple(tuple(uint256 amount, uint256 productId, uint256 nullifier)[] cart, address shop)',
 			];
-			const values = [data];
+			const values = [{ cart: data, shop: shopAddress }];
 			const abiCoder = ethers.AbiCoder.defaultAbiCoder();
 			const encodedData = abiCoder.encode(types, values);
 			const messageHash = ethers.keccak256(encodedData);
 			const messageBytes = ethers.getBytes(messageHash);
 			const signature = await wallet.signMessage(messageBytes);
-			await shopContract.claimPurchase(manager, signature, [
-				{
-					amount: 2,
-					productId: await getProductId(nftAddress, 1),
-					nullifier,
-				},
-			]);
+			await shopContract.claimPurchase(manager, signature, {
+				cart: [
+					{
+						amount: 2,
+						productId: await getProductId(
+							nftAddress,
+							1
+						),
+						nullifier,
+					},
+				],
+				shop: shopAddress,
+			});
 		});
 		it('Should not claim an NFT twice', async function () {
 			await shopContract.connect(owner).mintAndRegister({
@@ -461,23 +467,16 @@ describe('Shop', function () {
 				},
 			];
 			const types = [
-				'tuple(uint256 amount, uint256 productId, uint256 nullifier)[]',
+				'tuple(tuple(uint256 amount, uint256 productId, uint256 nullifier)[] cart, address shop)',
 			];
-			const values = [data];
+			const values = [{ cart: data, shop: shopAddress }];
 			const abiCoder = ethers.AbiCoder.defaultAbiCoder();
 			const encodedData = abiCoder.encode(types, values);
 			const messageHash = ethers.keccak256(encodedData);
 			const messageBytes = ethers.getBytes(messageHash);
 			const signature = await wallet.signMessage(messageBytes);
-			await shopContract.claimPurchase(manager, signature, [
-				{
-					amount: 2,
-					productId: await getProductId(nftAddress, 1),
-					nullifier: nullifier,
-				},
-			]);
-			await expect(
-				shopContract.claimPurchase(manager, signature, [
+			await shopContract.claimPurchase(manager, signature, {
+				cart: [
 					{
 						amount: 2,
 						productId: await getProductId(
@@ -486,7 +485,23 @@ describe('Shop', function () {
 						),
 						nullifier: nullifier,
 					},
-				])
+				],
+				shop: shopAddress,
+			});
+			await expect(
+				shopContract.claimPurchase(manager, signature, {
+					cart: [
+						{
+							amount: 2,
+							productId: await getProductId(
+								nftAddress,
+								1
+							),
+							nullifier: nullifier,
+						},
+					],
+					shop: shopAddress,
+				})
 			).to.be.revertedWithCustomError(shopContract, 'AlreadyClaimed');
 		});
 	});
