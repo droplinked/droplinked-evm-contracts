@@ -206,28 +206,28 @@ contract DropShop is
     function mintAndRegister(
         RecordData memory mintData
     ) public onlyOwner returns (uint256 productId) {
-        uint _tokenId = DroplinkedToken1155(mintData._nftAddress).mint(
-            mintData._uri,
-            mintData._amount,
+        uint _tokenId = DroplinkedToken1155(mintData.nftAddress).mint(
+            mintData.uri,
+            mintData.amount,
             msg.sender,
-            mintData._royalty,
-            mintData._accepted
+            mintData.royalty,
+            mintData.accepted
         );
 
         // register the product
         uint registeredProductId = registerProduct(
             _tokenId,
-            mintData._nftAddress,
-            mintData._affiliatePercentage,
-            mintData._nftType,
-            mintData._productType
+            mintData.nftAddress,
+            mintData.affiliatePercentage,
+            mintData.nftType,
+            mintData.productType
         );
 
         emit ProductRegistered(
             registeredProductId,
-            mintData._amount,
+            mintData.amount,
             msg.sender,
-            mintData._uri
+            mintData.uri
         );
         return registeredProductId;
     }

@@ -143,14 +143,14 @@ describe('Shop', function () {
 	describe('Mint', function () {
 		it('Should mint 1000 tokens via ERC1155', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			expect(
 				await nftContract.balanceOf(
@@ -162,24 +162,24 @@ describe('Shop', function () {
 
 		it('Should mint the same product with the same token_id', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			expect(
 				await nftContract.balanceOf(
@@ -198,14 +198,14 @@ describe('Shop', function () {
 
 		it('Should set the right product metadata', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			expect(
 				await nftContract.balanceOf(
@@ -225,14 +225,14 @@ describe('Shop', function () {
 	describe('Publish request', function () {
 		it('Should publish a request', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			await shopContract
 				.connect(firstUser)
@@ -247,14 +247,14 @@ describe('Shop', function () {
 
 		it('Should publish publish a request with the right data', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			await shopContract
 				.connect(firstUser)
@@ -269,14 +269,14 @@ describe('Shop', function () {
 
 		it('Should not publish a request twice', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			await shopContract
 				.connect(firstUser)
@@ -294,14 +294,14 @@ describe('Shop', function () {
 	describe('AcceptRequest', function () {
 		it('Should accept a request', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			await shopContract
 				.connect(firstUser)
@@ -312,14 +312,14 @@ describe('Shop', function () {
 		});
 		it('Should not accept a request if it is not the producer', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			await shopContract
 				.connect(firstUser)
@@ -336,14 +336,14 @@ describe('Shop', function () {
 	describe('DisapproveRequest', function () {
 		it('Should disapprove a request', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			await shopContract
 				.connect(firstUser)
@@ -356,14 +356,14 @@ describe('Shop', function () {
 
 		it('Should not disapprove a request if it is not the producer', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			await shopContract
 				.connect(firstUser)
@@ -381,14 +381,14 @@ describe('Shop', function () {
 	describe('NFT Claim', function () {
 		it('Should claim an NFT', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			const manager = '0x666837f8fF5fa9106304f9F94a95dF56777599A1';
 			await shopContract.setManager(manager);
@@ -436,14 +436,14 @@ describe('Shop', function () {
 		});
 		it('Should not claim an NFT twice', async function () {
 			await shopContract.connect(owner).mintAndRegister({
-				_accepted: true,
-				_affiliatePercentage: 100,
-				_amount: 1000,
-				_nftAddress: await nftContract.getAddress(),
-				_nftType: NFTType.ERC1155,
-				_productType: ProductType.DIGITAL,
-				_royalty: 1200,
-				_uri: 'ipfs.io/ipfs/randomhash',
+				accepted: true,
+				affiliatePercentage: 100,
+				amount: 1000,
+				nftAddress: await nftContract.getAddress(),
+				nftType: NFTType.ERC1155,
+				productType: ProductType.DIGITAL,
+				royalty: 1200,
+				uri: 'ipfs.io/ipfs/randomhash',
 			});
 			const manager = '0x666837f8fF5fa9106304f9F94a95dF56777599A1';
 			await shopContract.setManager(manager);

@@ -40,14 +40,14 @@ struct Issuer {
 }
 
 struct RecordData {
-    address _nftAddress;
-    string _uri;
-    uint256 _amount;
-    bool _accepted;
-    uint256 _affiliatePercentage;
-    uint256 _royalty;
-    NFTType _nftType;
-    ProductType _productType;
+    address nftAddress;
+    string uri;
+    uint256 amount;
+    bool accepted;
+    uint256 affiliatePercentage;
+    uint256 royalty;
+    NFTType nftType;
+    ProductType productType;
 }
 
 struct PurchasedItem {

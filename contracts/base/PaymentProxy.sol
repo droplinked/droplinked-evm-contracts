@@ -6,30 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../structs/structs.sol";
 
-interface IShopPayment {
-    function purchaseProduct(
-        uint256 id,
-        bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
-    ) external payable;
-
-    function purchaseProductFor(
-        address receiver,
-        uint256 id,
-        bool isAffiliate,
-        uint256 amount,
-        uint80 roundId
-    ) external payable;
-
-    function getProduct(
-        uint256 productId
-    ) external view returns (Product memory);
-    function getProductViaAffiliateId(
-        uint256 affiliateId
-    ) external view returns (Product memory);
-}
-
 interface AggregatorV3Interface {
     function getRoundData(
         uint80 _roundId
@@ -176,64 +152,5 @@ contract DroplinkedPaymentProxy is Ownable {
         }
         transferTBDValues(tbdValues, tbdReceivers, ratio, currency);
         emit ProductPurchased(memo);
-    }
-
-    function calculateFinalPrice(
-        uint price,
-        uint amount,
-        address currency,
-        uint ratio
-    ) private pure returns (uint) {
-        uint finalPrice = price * amount;
-        if (currency == address(0)) {
-            finalPrice = toNativePrice(finalPrice, ratio);
-        }
-        return finalPrice;
-    }
-
-    function transferPayment(
-        uint finalPrice,
-        address currency,
-        address shopAddress
-    ) private {
-        if (currency != address(0) && currency != address(1)) {
-            require(
-                IERC20(currency).transferFrom(
-                    msg.sender,
-                    address(this),
-                    finalPrice
-                ),
-                "transfer failed"
-            );
-            IERC20(currency).approve(shopAddress, finalPrice);
-        }
-    }
-
-    function purchaseProduct(
-        uint finalPrice,
-        uint id,
-        bool isAffiliate,
-        uint amount,
-        uint80 roundId,
-        address shopAddress,
-        address currency
-    ) private {
-        if (currency == address(0) || currency == address(1)) {
-            IShopPayment(shopAddress).purchaseProductFor{value: finalPrice}(
-                msg.sender,
-                id,
-                isAffiliate,
-                amount,
-                roundId
-            );
-        } else {
-            IShopPayment(shopAddress).purchaseProductFor(
-                msg.sender,
-                id,
-                isAffiliate,
-                amount,
-                roundId
-            );
-        }
     }
 }

@@ -18,6 +18,11 @@ const config: HardhatUserConfig = {
 			chainId: 1564830818,
 			accounts: [process.env.PRIVATE_KEY as string],
 		},
+		skaleCalypso: {
+			url: 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet',
+			chainId: 974399131,
+			accounts: [process.env.PRIVATE_KEY as string],
+		},
 		bscTestnet: {
 			url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
 			chainId: 97,
@@ -49,10 +54,20 @@ const config: HardhatUserConfig = {
 			chainId: 8453,
 			accounts: [process.env.PRIVATE_KEY as string],
 		},
+		baseSepolia: {
+			url: 'https://sepolia.base.org/',
+			chainId: 84532,
+			accounts: [process.env.PRIVATE_KEY as string],
+		},
 		sepolia: {
-			url: 'https://sepolia.infura.io/v3/',
+			url: 'https://sepolia.infura.io/v3/55bd630c4e164c04bb27fff3f59babb0',
 			chainId: 11155111,
 			accounts: [process.env.PRIVATE_KEY as string],
+		},
+		redbellyTestNet: {
+			url: 'https://governors.testnet.redbelly.network',
+			chainId: 153,
+			accounts: [process.env.PRIVATE_KEY_RDBLY as string],
 		},
 	},
 	solidity: {
@@ -74,6 +89,7 @@ const config: HardhatUserConfig = {
 			base: process.env.BASE_API_KEY as string,
 			linea: process.env.LINEA_API_KEY as string,
 			ethereumMainnet: process.env.ETH_API_KEY as string,
+			baseSepolia: process.env.BASE_API_KEY as string,
 		},
 		customChains: [
 			{
@@ -90,6 +106,14 @@ const config: HardhatUserConfig = {
 				urls: {
 					apiURL: 'https://api.lineascan.build/api',
 					browserURL: 'https://goerli.lineascan.build/',
+				},
+			},
+			{
+				network: 'RedbellyTestNet',
+				chainId: 153,
+				urls: {
+					apiURL: 'https://www.oklink.com/api/explorer/v1/contract/verify/async/api/polygonAmoy',
+					browserURL: 'https://explorer.testnet.redbelly.network',
 				},
 			},
 		],
