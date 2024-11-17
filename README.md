@@ -2,6 +2,10 @@
 
 This repository contains the droplinked's smart-contract source code for EVM chains that droplinked integrates with, including : Polygon, Binance, Hedera and Ripple sidechain
 
+## Documentations
+
+You can view the documentations of the contracts, and how to use them in front/back-end over [here](./docs/overall.md)
+
 ## Run tests
 
 To run the tests on the contract you can run the following command in the dev branch:

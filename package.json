@@ -10,10 +10,15 @@
 		"deploy:ethereum": "npx hardhat run deploy/deploy.ts --network ethereumMainnet",
 		"deploy:bsc": "npx hardhat run deploy/deploy.ts --network bsc",
 		"deploy:base": "npx hardhat run deploy/deploy.ts --network base",
+		"deploy:baseSepolia": "npx hardhat run deploy/deploy.ts --network baseSepolia",
+		"deploy:sepolia": "npx hardhat run deploy/deploy.ts --network sepolia",
 		"deploy:linea": "npx hardhat run deploy/deploy.ts --network linea",
 		"deploy:polygon": "npx hardhat run deploy/deploy.ts --network polygon",
+		"deploy:polygonAmoy": "npx hardhat run deploy/deploy.ts --network polygonAmoy",
 		"deploy:bedi": "npx hardhat run deploy/deployBedi.ts --network base",
-		"deploy:skale": "npx hardhat run deploy/deploy.ts --network skale"
+		"deploy:skale": "npx hardhat run deploy/deploy.ts --network skale",
+		"deploy:skaleCalypso": "npx hardhat run deploy/deploy.ts --network skaleCalypso",
+		"deploy:redbelly": "npx hardhat run deploy/deploy.ts --network redbellyTestNet"
 	},
 	"repository": {
 		"type": "git",
@@ -34,11 +39,10 @@
 	"homepage": "https://github.com/droplinked/droplinked-contracts-v2#readme",
 	"devDependencies": {
 		"@nomicfoundation/hardhat-toolbox": "5.0.0",
-		"hardhat": "^2.22.1"
+		"hardhat": "^2.22.15"
 	},
 	"dependencies": {
 		"@chainlink/contracts": "^0.6.1",
-		"@nomicfoundation/edr-win32-x64-msvc": "^0.3.2",
 		"@nomicfoundation/hardhat-ethers": "^3.0.5",
 		"@openzeppelin/contracts": "^5.0.0",
 		"@openzeppelin/contracts-upgradeable": "^5.0.2",
