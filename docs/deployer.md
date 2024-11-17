@@ -13,7 +13,7 @@ The DropShopDeployer contract is designed to manage the deployment and configura
 - OwnableUpgradeable (for access control).
 
 ### Custom Interfaces and Contracts:
-  [IDIP1](./IDIP1.md), [DropERC1155](./DropERC1155.md), [IDropShop](./IDropShop.md) (specific to the platform).
+  [IDIP1](./IDIP1.md), [DropERC1155](./DropERC1155.md).
 
 ### Events
 1. ShopDeployed:
