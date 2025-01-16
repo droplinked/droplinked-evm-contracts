@@ -18,7 +18,10 @@
 		"deploy:bedi": "npx hardhat run deploy/deployBedi.ts --network base",
 		"deploy:skale": "npx hardhat run deploy/deploy.ts --network skale",
 		"deploy:skaleCalypso": "npx hardhat run deploy/deploy.ts --network skaleCalypso",
-		"deploy:redbelly": "npx hardhat run deploy/deploy.ts --network redbellyTestNet"
+		"deploy:redbellyTestnet": "npx hardhat run deploy/deployDeployer.ts --network redbellyTestNet",
+		"deploy:redbelly": "npx hardhat run deploy/deployDeployer.ts --network redbelly",
+		"deploy:bitlayerTestnet": "npx hardhat run deploy/deploy.ts --network bitlayerTestnet",
+		"deploy:bitlayer": "npx hardhat run deploy/deployDeployer.ts --network bitlayer"
 	},
 	"repository": {
 		"type": "git",

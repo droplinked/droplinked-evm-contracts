@@ -69,6 +69,18 @@ const config: HardhatUserConfig = {
 			chainId: 153,
 			accounts: [process.env.PRIVATE_KEY_RDBLY as string],
 		},
+		redbelly: {
+			url: 'https://governors.mainnet.redbelly.network',
+			accounts: [process.env.PRIVATE_KEY as string],
+		},
+		bitlayerTestnet: {
+			url: 'https://testnet-rpc.bitlayer.org',
+			accounts: [process.env.PRIVATE_KEY as string],
+		},
+		bitlayer: {
+			url: 'https://rpc.bitlayer.org',
+			accounts: [process.env.PRIVATE_KEY as string],
+		},
 	},
 	solidity: {
 		version: '0.8.20',
@@ -82,6 +94,7 @@ const config: HardhatUserConfig = {
 	},
 	etherscan: {
 		apiKey: {
+			redbelly: 'redbelly',
 			bscTestnet: process.env.BINANCE_API_KEY as string,
 			bsc: process.env.BINANCE_API_KEY as string,
 			polygonAmoy: process.env.POLYGON_API_KEY as string,
@@ -90,6 +103,9 @@ const config: HardhatUserConfig = {
 			linea: process.env.LINEA_API_KEY as string,
 			ethereumMainnet: process.env.ETH_API_KEY as string,
 			baseSepolia: process.env.BASE_API_KEY as string,
+			RedbellyTestNet: '1234',
+			bitlayerTestnet: '1234',
+			bitlayer: '1234',
 		},
 		customChains: [
 			{
@@ -114,6 +130,30 @@ const config: HardhatUserConfig = {
 				urls: {
 					apiURL: 'https://www.oklink.com/api/explorer/v1/contract/verify/async/api/polygonAmoy',
 					browserURL: 'https://explorer.testnet.redbelly.network',
+				},
+			},
+			{
+				network: 'redbelly',
+				chainId: 151,
+				urls: {
+					apiURL: 'https://api.routescan.io/v2/network/mainnet/evm/151/etherscan',
+					browserURL: 'https://redbelly.routescan.io',
+				},
+			},
+			{
+				network: 'bitlayerTestnet',
+				chainId: 200810,
+				urls: {
+					apiURL: 'https://api-testnet.btrscan.com/scan/api',
+					browserURL: 'https://testnet.btrscan.com/',
+				},
+			},
+			{
+				network: 'bitlayer',
+				chainId: 200901,
+				urls: {
+					apiURL: 'https://api.btrscan.com/scan/api',
+					browserURL: 'https://www.btrscan.com/',
 				},
 			},
 		],

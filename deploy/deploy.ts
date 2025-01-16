@@ -14,6 +14,8 @@ const chainLinkAddresses = {
 	skale: ['0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419', 120], // INFO: This is not correct
 	skaleCalypso: ['0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419', 120], // INFO: This is not correct
 	baseSepolia: ['0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419', 120], // INFO: This is not correct
+	redbelly: ['0x0CD42d829F88fe539f710E9b7692C70b94aaEad4', 120], // INFO: This is not correct
+	bitlayerTestnet: ['0x0CD42d829F88fe539f710E9b7692C70b94aaEad4', 120], // INFO: This is not correct
 };
 
 async function main() {
