@@ -1,67 +1,101 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
+/**
+ * @dev Minimal interfaces to reduce code size.
+ *      (These are still valid runtime calls in Solidity 0.8.x)
+ */
+interface IERC20 {
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+}
+
+interface IERC721 {
+    // If you need 'safe' transfer, use "safeTransferFrom" below instead of "transferFrom"
+    function transferFrom(address from, address to, uint256 tokenId) external;
+    // function safeTransferFrom(address from, address to, uint256 tokenId) external;
+}
+
+interface IERC1155 {
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 id,
+        uint256 amount,
+        bytes calldata data
+    ) external;
+}
 
 /**
  * @title BulkTokenDistributor
- * @dev A contract for distributing ERC20, ERC721, and ERC1155 tokens to multiple recipients in bulk.
+ * @dev Highly optimized version for gas efficiency.
  */
 contract BulkTokenDistributor {
+    // Custom error to save gas vs. revert strings
+    error ArrayLengthMismatch();
+
     /**
-     * @dev Distributes ERC20 tokens to multiple recipients
-     * @param token Address of the ERC20 token contract
-     * @param recipients Array of recipient addresses
-     * @param amounts Array of amounts to send to each recipient
+     * @dev Distributes ERC20 tokens to multiple recipients.
+     * @param token The ERC20 contract address
+     * @param recipients The array of recipient addresses
+     * @param amounts The array of amounts to send
+     *
      * Requirements:
-     * - Caller must have approved sufficient tokens to this contract
-     * - recipients and amounts arrays must be of equal length
+     * - recipients.length == amounts.length
+     * - The caller must have approved this contract for enough tokens.
      */
     function distributeERC20(
         address token,
         address[] calldata recipients,
         uint256[] calldata amounts
     ) external {
-        require(recipients.length == amounts.length, "Mismatched array lengths");
+        uint256 len = recipients.length;
+        if (len != amounts.length) revert ArrayLengthMismatch();
+
         IERC20 erc20 = IERC20(token);
 
-        for (uint256 i = 0; i < recipients.length; i++) {
+        for (uint256 i; i < len; ) {
+            // Transfer from the caller to each recipient
             erc20.transferFrom(msg.sender, recipients[i], amounts[i]);
+            unchecked { ++i; }
         }
     }
 
     /**
-     * @dev Distributes ERC721 tokens to multiple recipients
-     * @param token Address of the ERC721 token contract
-     * @param recipients Array of recipient addresses
-     * @param tokenIds Array of token IDs to send to each recipient
+     * @dev Distributes ERC721 tokens to multiple recipients.
+     * @param token The ERC721 contract address
+     * @param recipients The array of recipient addresses
+     * @param tokenIds The array of token IDs to send
+     *
      * Requirements:
-     * - Caller must be owner of or approved for all tokens
-     * - recipients and tokenIds arrays must be of equal length
+     * - recipients.length == tokenIds.length
+     * - The caller must own or be approved for each token ID.
      */
     function distributeERC721(
         address token,
         address[] calldata recipients,
         uint256[] calldata tokenIds
     ) external {
-        require(recipients.length == tokenIds.length, "Mismatched array lengths");
+        uint256 len = recipients.length;
+        if (len != tokenIds.length) revert ArrayLengthMismatch();
+
         IERC721 erc721 = IERC721(token);
 
-        for (uint256 i = 0; i < recipients.length; i++) {
-            erc721.safeTransferFrom(msg.sender, recipients[i], tokenIds[i]);
+        for (uint256 i; i < len; ) {
+            // If you need the safety check, replace with safeTransferFrom
+            erc721.transferFrom(msg.sender, recipients[i], tokenIds[i]);
+            unchecked { ++i; }
         }
     }
 
     /**
-     * @dev Distributes ERC1155 tokens to multiple recipients
-     * @param token Address of the ERC1155 token contract
-     * @param tokenId ID of the token to distribute
-     * @param recipients Array of recipient addresses
-     * @param amount Amount of tokens to send to each recipient
+     * @dev Distributes ERC1155 tokens to multiple recipients.
+     * @param token The ERC1155 contract address
+     * @param tokenId The token ID to distribute
+     * @param recipients The array of recipient addresses
+     * @param amount The amount of tokens to send each recipient
+     *
      * Requirements:
-     * - Caller must have sufficient balance and approval
+     * - The caller must have approved this contract as an operator (setApprovalForAll).
      */
     function distributeERC1155(
         address token,
@@ -70,15 +104,11 @@ contract BulkTokenDistributor {
         uint256 amount
     ) external {
         IERC1155 erc1155 = IERC1155(token);
+        uint256 len = recipients.length;
 
-        for (uint256 i = 0; i < recipients.length; i++) {
-            erc1155.safeTransferFrom(
-                msg.sender,
-                recipients[i],
-                tokenId,
-                amount,
-                ""
-            );
+        for (uint256 i; i < len; ) {
+            erc1155.safeTransferFrom(msg.sender, recipients[i], tokenId, amount, "");
+            unchecked { ++i; }
         }
     }
 }

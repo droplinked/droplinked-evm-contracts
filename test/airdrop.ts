@@ -68,7 +68,10 @@ describe('BulkTokenDistributor', function () {
 					[await addr1.getAddress()],
 					[100, 200]
 				)
-			).to.be.revertedWith('Mismatched array lengths');
+			).to.be.revertedWithCustomError(
+				distributor,
+				'ArrayLengthMismatch'
+			);
 		});
 	});
 
