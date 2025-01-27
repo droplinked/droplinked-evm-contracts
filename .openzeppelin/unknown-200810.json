@@ -1,0 +1,179 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [
+    {
+      "address": "0xBd7e55C0E18fE22834BEAb83Ffc62aE57Ad90BFB",
+      "txHash": "0xfc8ad3abbc6b50c311a887390f6eaf2709eb19192252f7e360e661a70dd45eaa",
+      "kind": "transparent"
+    }
+  ],
+  "impls": {
+    "92410a1f8fc52f6139b7f0bc967057b642a35cbe740756a03faccaa0a9449738": {
+      "address": "0xADb0080e95Ac4392DC7F9FfD5a5371A2fdaFA93A",
+      "txHash": "0xc17da4498df7a324408e8bf045fd0f82b7764c20469cd9215f37d9eb9e0e3358",
+      "layout": {
+        "solcVersion": "0.8.20",
+        "storage": [
+          {
+            "label": "shopAddresses",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_array(t_contract(IDropShop)5836)dyn_storage",
+            "contract": "DropShopDeployer",
+            "src": "contracts\\deployers\\shopDeployer.sol:18"
+          },
+          {
+            "label": "nftContracts",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_array(t_address)dyn_storage",
+            "contract": "DropShopDeployer",
+            "src": "contracts\\deployers\\shopDeployer.sol:19"
+          },
+          {
+            "label": "shopOwners",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_mapping(t_address,t_array(t_address)dyn_storage)",
+            "contract": "DropShopDeployer",
+            "src": "contracts\\deployers\\shopDeployer.sol:20"
+          },
+          {
+            "label": "nftOwners",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_mapping(t_address,t_array(t_address)dyn_storage)",
+            "contract": "DropShopDeployer",
+            "src": "contracts\\deployers\\shopDeployer.sol:21"
+          },
+          {
+            "label": "droplinkedFee",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "DropShopDeployer",
+            "src": "contracts\\deployers\\shopDeployer.sol:22"
+          },
+          {
+            "label": "heartBeat",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256",
+            "contract": "DropShopDeployer",
+            "src": "contracts\\deployers\\shopDeployer.sol:23"
+          },
+          {
+            "label": "droplinkedWallet",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_address",
+            "contract": "DropShopDeployer",
+            "src": "contracts\\deployers\\shopDeployer.sol:24"
+          },
+          {
+            "label": "shopCount",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256",
+            "contract": "DropShopDeployer",
+            "src": "contracts\\deployers\\shopDeployer.sol:25"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)65_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)14_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_array(t_address)dyn_storage": {
+            "label": "address[]",
+            "numberOfBytes": "32"
+          },
+          "t_array(t_contract(IDropShop)5836)dyn_storage": {
+            "label": "contract IDropShop[]",
+            "numberOfBytes": "32"
+          },
+          "t_contract(IDropShop)5836": {
+            "label": "contract IDropShop",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_array(t_address)dyn_storage)": {
+            "label": "mapping(address => address[])",
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
