@@ -102,6 +102,7 @@ const config: HardhatUserConfig = {
 			base: process.env.BASE_API_KEY as string,
 			linea: process.env.LINEA_API_KEY as string,
 			ethereumMainnet: process.env.ETH_API_KEY as string,
+			sepolia: process.env.ETH_API_KEY as string,
 			baseSepolia: process.env.BASE_API_KEY as string,
 			RedbellyTestNet: '1234',
 			bitlayerTestnet: '1234',

@@ -6,7 +6,11 @@ pragma solidity ^0.8.20;
  *      (These are still valid runtime calls in Solidity 0.8.x)
  */
 interface IERC20 {
-    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+    function transferFrom(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) external returns (bool);
 }
 
 interface IERC721 {
@@ -33,6 +37,8 @@ contract BulkTokenDistributor {
     // Custom error to save gas vs. revert strings
     error ArrayLengthMismatch();
 
+    event AirdropDone(string airdropId);
+
     /**
      * @dev Distributes ERC20 tokens to multiple recipients.
      * @param token The ERC20 contract address
@@ -46,7 +52,8 @@ contract BulkTokenDistributor {
     function distributeERC20(
         address token,
         address[] calldata recipients,
-        uint256[] calldata amounts
+        uint256[] calldata amounts,
+        string memory memo
     ) external {
         uint256 len = recipients.length;
         if (len != amounts.length) revert ArrayLengthMismatch();
@@ -56,8 +63,11 @@ contract BulkTokenDistributor {
         for (uint256 i; i < len; ) {
             // Transfer from the caller to each recipient
             erc20.transferFrom(msg.sender, recipients[i], amounts[i]);
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
+        emit AirdropDone(memo);
     }
 
     /**
@@ -73,7 +83,8 @@ contract BulkTokenDistributor {
     function distributeERC721(
         address token,
         address[] calldata recipients,
-        uint256[] calldata tokenIds
+        uint256[] calldata tokenIds,
+        string memory memo
     ) external {
         uint256 len = recipients.length;
         if (len != tokenIds.length) revert ArrayLengthMismatch();
@@ -83,8 +94,11 @@ contract BulkTokenDistributor {
         for (uint256 i; i < len; ) {
             // If you need the safety check, replace with safeTransferFrom
             erc721.transferFrom(msg.sender, recipients[i], tokenIds[i]);
-            unchecked { ++i; }
+            unchecked {
+                ++i;
+            }
         }
+        emit AirdropDone(memo);
     }
 
     /**
@@ -92,7 +106,7 @@ contract BulkTokenDistributor {
      * @param token The ERC1155 contract address
      * @param tokenId The token ID to distribute
      * @param recipients The array of recipient addresses
-     * @param amount The amount of tokens to send each recipient
+     * @param amounts The amount of tokens to send each recipient
      *
      * Requirements:
      * - The caller must have approved this contract as an operator (setApprovalForAll).
@@ -100,15 +114,26 @@ contract BulkTokenDistributor {
     function distributeERC1155(
         address token,
         uint256 tokenId,
-        address[] calldata recipients,
-        uint256 amount
+        address[] memory recipients,
+        uint256[] memory amounts,
+        string memory memo
     ) external {
         IERC1155 erc1155 = IERC1155(token);
         uint256 len = recipients.length;
 
         for (uint256 i; i < len; ) {
-            erc1155.safeTransferFrom(msg.sender, recipients[i], tokenId, amount, "");
-            unchecked { ++i; }
+            erc1155.safeTransferFrom(
+                msg.sender,
+                recipients[i],
+                tokenId,
+                amounts[i],
+                ""
+            );
+            unchecked {
+                ++i;
+            }
         }
+
+        emit AirdropDone(memo);
     }
 }
