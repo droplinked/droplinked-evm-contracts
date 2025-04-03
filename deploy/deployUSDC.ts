@@ -1,9 +1,9 @@
-import { ethers, upgrades } from 'hardhat';
+import { ethers } from 'hardhat';
 
 async function main() {
-	const BediToken = await ethers.getContractFactory('DroplinkedERC20Token');
-	const bedi = await BediToken.deploy();
-	console.log('[ ✅ ] Bedi deployed to: ', await bedi.getAddress());
+	const USDCToken = await ethers.getContractFactory('DroplinkedERC20Token');
+	const usdc = await USDCToken.deploy();
+	console.log('[ ✅ ] USDC deployed to: ', await usdc.getAddress());
 }
 
 main()

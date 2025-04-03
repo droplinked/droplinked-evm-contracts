@@ -12,10 +12,22 @@ To run the tests on the contract you can run the following command in the dev br
 `npm run test`
 
 ```
+❯ npx hardhat test
+
+
+  BulkTokenDistributor
+    ERC20 Distribution
+      ✔ Should distribute ERC20 tokens correctly
+      ✔ Should revert with mismatched array lengths
+    ERC721 Distribution
+      ✔ Should distribute ERC721 tokens correctly (38ms)
+    ERC1155 Distribution
+      ✔ Should distribute ERC1155 tokens correctly
+
   Shop
     Deployment
-NFT deployed to: 0x5392A33F7F677f59e833FEBF4016cDDD88fF9E67
-Shop deployed to: 0x17548A4ecf246B41889e49b1c5E80909116D62A5
+NFT deployed to: 0x44BF2a9217A2970A1bCC7529Bf1d40828C594320
+Shop deployed to: 0x6cf304A5C5Be55541C8437546649E7305bA2d598
 Shop Owner: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 , owner account: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266
       ✔ Should deploy shop
       ✔ Should set the right fee
@@ -27,31 +39,10 @@ Shop Owner: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 , owner account: 0xf39Fd6
       ✔ Should not update the fee to given number using other account
     Mint
       ✔ Should mint 1000 tokens via ERC1155
-      ✔ Should mint the same product with the same token_id (42ms)
+      ✔ Should mint the same product with the same token_id
       ✔ Should set the right product metadata
     Publish request
       ✔ Should publish a request
-      ✔ Should publish publish a request with the right data
-      ✔ Should not publish a request twice
-    Publish request
-      ✔ Should publish a request
-      ✔ Should publish publish a request with the right data
-    Publish request
-      ✔ Should publish a request
-    Publish request
-      ✔ Should publish a request
-      ✔ Should publish publish a request with the right data
-    Publish request
-      ✔ Should publish a request
-    Publish request
-    Publish request
-    Publish request
-    Publish request
-    Publish request
-      ✔ Should publish a request
-    Publish request
-      ✔ Should publish a request
-      ✔ Should publish publish a request with the right data
       ✔ Should publish publish a request with the right data
       ✔ Should not publish a request twice
     AcceptRequest
@@ -61,11 +52,11 @@ Shop Owner: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 , owner account: 0xf39Fd6
       ✔ Should disapprove a request
       ✔ Should not disapprove a request if it is not the producer
     NFT Claim
-      ✔ Should claim an NFT (119ms)
-      ✔ Should not claim an NFT twice (48ms)
+      ✔ Should claim an NFT (75ms)
+      ✔ Should not claim an NFT twice
 
 
-  18 passing (3s)
+  22 passing (3s)
 ```
 
 ## Deploy

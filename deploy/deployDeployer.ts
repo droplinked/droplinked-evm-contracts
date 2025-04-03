@@ -9,19 +9,18 @@ const chainLinkAddresses = {
 	linea: ['0x3c6Cd9Cc7c7a4c2Cf5a82734CD249D7D593354dA', 86400],
 	ethereumMainnet: ['0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419', 3600],
 	sepolia: ['0x694AA1769357215DE4FAC081bf1f309aDC325306', 3600],
-	skale: ['0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419', 120], // INFO: this is not correct
-	baseSepolia: ['0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419', 120], // INFO: this is not correct
-	redbelly: ['0x0CD42d829F88fe539f710E9b7692C70b94aaEad4', 120], // INFO: This is not correct
-	redbellyTestNet: ['0x0CD42d829F88fe539f710E9b7692C70b94aaEad4', 120], // INFO: This is not correct
-	bitlayerTestnet: ['0x0CD42d829F88fe539f710E9b7692C70b94aaEad4', 120], // INFO: This is not correct
-	bitlayer: ['0xBEc8C184A8f55E6443B315361Bac3BbB2280E8E8', 120], // INFO: This is not correct
+	// INFO: this is just a placeholder, no actual price feed contract exists in chain-link for this chains:
+	skale: ['0x0000000000000000000000000000000000000000', 120],
+	baseSepolia: ['0x0000000000000000000000000000000000000000', 120],
+	redbelly: ['0x0000000000000000000000000000000000000000', 120],
+	redbellyTestNet: ['0x0000000000000000000000000000000000000000', 120],
+	bitlayerTestnet: ['0x0000000000000000000000000000000000000000', 120],
+	bitlayer: ['0x0000000000000000000000000000000000000000', 120],
 };
 
 async function main() {
 	console.log('[ 👾 ] Initializing...');
-	console.log(
-		`[ 👾 ] Deploying to chain: ${(await ethers.provider.getNetwork()).name}`
-	);
+	console.log(`[ 👾 ] Deploying to chain: ${(await ethers.provider.getNetwork()).name}`);
 	const network = (await ethers.provider.getNetwork()).name;
 	const heartBeat = (chainLinkAddresses as any)[network][1];
 	const droplinkedWallet = '0x9CA686090b4c6892Bd76200e3fAA2EeC98f0528F';
