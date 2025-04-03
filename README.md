@@ -4,7 +4,9 @@ This repository contains the droplinked's smart-contract source code for EVM cha
 
 ## Documentations
 
-You can view the documentations of the contracts, and how to use them in front/back-end over [here](./docs/overall.md)
+You can view the user documentation of the contracts, and how to use them in front/back-end over [here](./docs/overall.md)
+
+For detailed technical documentation of the smart contract architecture and components, see [Technical Documentation](./docs/technical_documentation.md)
 
 ## Run tests
 
