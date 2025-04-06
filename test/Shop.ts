@@ -25,10 +25,7 @@ enum NFTType {
 
 async function getProductId(nftAddress: string, tokenId: number) {
 	const hash = ethers.keccak256(
-		ethers.AbiCoder.defaultAbiCoder().encode(
-			['address', 'uint256'],
-			[nftAddress, tokenId]
-		)
+		ethers.AbiCoder.defaultAbiCoder().encode(['address', 'uint256'], [nftAddress, tokenId])
 	);
 	const hashAsUint256 = ethers.toBigInt(hash);
 	return hashAsUint256.toString();
@@ -38,8 +35,6 @@ describe('Shop', function () {
 	let owner: HardhatEthersSigner;
 	let firstUser: HardhatEthersSigner;
 	let secondUser: HardhatEthersSigner;
-	let thirdUser: HardhatEthersSigner;
-	let fourthUser: HardhatEthersSigner;
 	let deployer: DropShopDeployer;
 	let shopAddress: string;
 	let nftAddress: string;
@@ -48,23 +43,15 @@ describe('Shop', function () {
 	let paymentProxy: DroplinkedPaymentProxy;
 
 	beforeEach(async function () {
-		[owner, firstUser, secondUser, thirdUser, fourthUser] =
-			await ethers.getSigners();
+		[owner, firstUser, secondUser] = await ethers.getSigners();
 		const ChainLink = await ethers.getContractFactory('chainLink');
 		const chainlink = await ChainLink.deploy();
 		const Deployer = await ethers.getContractFactory('DropShopDeployer');
-		deployer = (await upgrades.deployProxy(
-			Deployer,
-			[120, secondUser.address, 100],
-			{ initializer: 'initialize' }
-		)) as any;
-		const PaymentProxy = await ethers.getContractFactory(
-			'DroplinkedPaymentProxy'
-		);
-		paymentProxy = (await PaymentProxy.deploy(
-			120,
-			await chainlink.getAddress()
-		)) as any;
+		deployer = (await upgrades.deployProxy(Deployer, [120, secondUser.address, 100], {
+			initializer: 'initialize',
+		})) as any;
+		const PaymentProxy = await ethers.getContractFactory('DroplinkedPaymentProxy');
+		this.paymentProxy = (await PaymentProxy.deploy(120, await chainlink.getAddress())) as any;
 		// address usdcTokenAddress, address routerAddress, address nativeTokenWrapper
 		const constructorArgs = [
 			'ShopName',
@@ -84,12 +71,8 @@ describe('Shop', function () {
 				bytecode + bytecodeWithArgs.split('0x')[1],
 				'0x0000000000000000000000000000000000000000000000000000000000000001'
 			);
-		shopAddress = await deployer.shopAddresses(
-			Number(await deployer.shopCount()) - 1
-		);
-		nftAddress = await deployer.nftContracts(
-			Number(await deployer.shopCount()) - 1
-		);
+		shopAddress = await deployer.shopAddresses(Number(await deployer.shopCount()) - 1);
+		nftAddress = await deployer.nftContracts(Number(await deployer.shopCount()) - 1);
 		nftContract = await ethers.getContractAt('DroplinkedToken', nftAddress);
 		shopContract = await ethers.getContractAt('DropShop', shopAddress);
 	});
@@ -97,9 +80,7 @@ describe('Shop', function () {
 	describe('Deployment', function () {
 		it('Should deploy shop', async function () {
 			console.log(`NFT deployed to: ${await nftContract.getAddress()}`);
-			console.log(
-				`Shop deployed to: ${await shopContract.getAddress()}`
-			);
+			console.log(`Shop deployed to: ${await shopContract.getAddress()}`);
 			console.log(
 				`Shop Owner: ${await shopContract.owner()} , owner account: ${await owner.getAddress()}`
 			);
@@ -118,10 +99,7 @@ describe('Shop', function () {
 		it('should not update the heartbeat with other account', async function () {
 			await expect(
 				deployer.connect(firstUser).setHeartBeat(4000)
-			).to.be.revertedWithCustomError(
-				deployer,
-				'OwnableUnauthorizedAccount'
-			);
+			).to.be.revertedWithCustomError(deployer, 'OwnableUnauthorizedAccount');
 		});
 	});
 
@@ -133,10 +111,7 @@ describe('Shop', function () {
 		it('Should not update the fee to given number using other account', async function () {
 			await expect(
 				deployer.connect(firstUser).setDroplinkedFee(200)
-			).to.be.revertedWithCustomError(
-				deployer,
-				'OwnableUnauthorizedAccount'
-			);
+			).to.be.revertedWithCustomError(deployer, 'OwnableUnauthorizedAccount');
 		});
 	});
 
@@ -152,12 +127,7 @@ describe('Shop', function () {
 				royalty: 1200,
 				uri: 'ipfs.io/ipfs/randomhash',
 			});
-			expect(
-				await nftContract.balanceOf(
-					await shopContract.getAddress(),
-					1
-				)
-			).to.equal(1000);
+			expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(1000);
 		});
 
 		it('Should mint the same product with the same token_id', async function () {
@@ -181,17 +151,10 @@ describe('Shop', function () {
 				royalty: 1200,
 				uri: 'ipfs.io/ipfs/randomhash',
 			});
-			expect(
-				await nftContract.balanceOf(
-					await shopContract.getAddress(),
-					1
-				)
-			).to.equal(2000);
+			expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(2000);
 			let result: ProductStructOutput;
 
-			result = await shopContract.getProduct(
-				await getProductId(nftAddress, 1)
-			);
+			result = await shopContract.getProduct(await getProductId(nftAddress, 1));
 			expect(result.tokenId).to.equal(1);
 			expect(result.nftType).to.equal(NFTType.ERC1155);
 		});
@@ -207,16 +170,7 @@ describe('Shop', function () {
 				royalty: 1200,
 				uri: 'ipfs.io/ipfs/randomhash',
 			});
-			expect(
-				await nftContract.balanceOf(
-					await shopContract.getAddress(),
-					1
-				)
-			).to.equal(1000);
-			let result: ProductStructOutput;
-			result = await shopContract.getProduct(
-				await getProductId(nftAddress, 1)
-			);
+			expect(await nftContract.balanceOf(await shopContract.getAddress(), 1)).to.equal(1000);
 			const tokenURI = await nftContract.uris(1);
 			expect(tokenURI).to.equal('ipfs.io/ipfs/randomhash');
 		});
@@ -240,9 +194,7 @@ describe('Shop', function () {
 			const affiliateReq = await shopContract.affiliateRequests(0);
 			expect(affiliateReq.isConfirmed).to.equal(false);
 			expect(affiliateReq.publisher).to.equal(firstUser.address);
-			expect(affiliateReq.productId).to.equal(
-				await getProductId(nftAddress, 1)
-			);
+			expect(affiliateReq.productId).to.equal(await getProductId(nftAddress, 1));
 		});
 
 		it('Should publish publish a request with the right data', async function () {
@@ -262,9 +214,7 @@ describe('Shop', function () {
 			const affiliateReq = await shopContract.affiliateRequests(0);
 			expect(affiliateReq.isConfirmed).to.equal(false);
 			expect(affiliateReq.publisher).to.equal(firstUser.address);
-			expect(affiliateReq.productId).to.equal(
-				await getProductId(nftAddress, 1)
-			);
+			expect(affiliateReq.productId).to.equal(await getProductId(nftAddress, 1));
 		});
 
 		it('Should not publish a request twice', async function () {
@@ -282,11 +232,7 @@ describe('Shop', function () {
 				.connect(firstUser)
 				.requestAffiliate(await getProductId(nftAddress, 1));
 			await expect(
-				shopContract
-					.connect(firstUser)
-					.requestAffiliate(
-						await getProductId(nftAddress, 1)
-					)
+				shopContract.connect(firstUser).requestAffiliate(await getProductId(nftAddress, 1))
 			).to.be.revertedWithCustomError(shopContract, 'AlreadyRequested');
 		});
 	});
@@ -326,10 +272,7 @@ describe('Shop', function () {
 				.requestAffiliate(await getProductId(nftAddress, 1));
 			await expect(
 				shopContract.connect(secondUser).approveRequest(0)
-			).to.be.revertedWithCustomError(
-				shopContract,
-				'OwnableUnauthorizedAccount'
-			);
+			).to.be.revertedWithCustomError(shopContract, 'OwnableUnauthorizedAccount');
 		});
 	});
 
@@ -371,10 +314,7 @@ describe('Shop', function () {
 			await shopContract.connect(owner).approveRequest(0);
 			await expect(
 				shopContract.connect(secondUser).disapproveRequest(0)
-			).to.be.revertedWithCustomError(
-				shopContract,
-				'OwnableUnauthorizedAccount'
-			);
+			).to.be.revertedWithCustomError(shopContract, 'OwnableUnauthorizedAccount');
 		});
 	});
 
@@ -397,11 +337,7 @@ describe('Shop', function () {
 			const wallet = new ethers.Wallet(ownerPrivateKey);
 			const nullifier = ethers.keccak256(
 				Buffer.from(
-					Date.now().toString() +
-						`droplinked_sign_2_${await getProductId(
-							nftAddress,
-							1
-						)}`
+					Date.now().toString() + `droplinked_sign_2_${await getProductId(nftAddress, 1)}`
 				)
 			);
 			const data = [
@@ -424,10 +360,7 @@ describe('Shop', function () {
 				cart: [
 					{
 						amount: 2,
-						productId: await getProductId(
-							nftAddress,
-							1
-						),
+						productId: await getProductId(nftAddress, 1),
 						nullifier,
 					},
 				],
@@ -452,11 +385,7 @@ describe('Shop', function () {
 			const wallet = new ethers.Wallet(ownerPrivateKey);
 			const nullifier = ethers.keccak256(
 				Buffer.from(
-					Date.now().toString() +
-						`droplinked_sign_2_${await getProductId(
-							nftAddress,
-							1
-						)}`
+					Date.now().toString() + `droplinked_sign_2_${await getProductId(nftAddress, 1)}`
 				)
 			);
 			const data = [
@@ -479,10 +408,7 @@ describe('Shop', function () {
 				cart: [
 					{
 						amount: 2,
-						productId: await getProductId(
-							nftAddress,
-							1
-						),
+						productId: await getProductId(nftAddress, 1),
 						nullifier: nullifier,
 					},
 				],
@@ -493,10 +419,7 @@ describe('Shop', function () {
 					cart: [
 						{
 							amount: 2,
-							productId: await getProductId(
-								nftAddress,
-								1
-							),
+							productId: await getProductId(nftAddress, 1),
 							nullifier: nullifier,
 						},
 					],
