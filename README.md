@@ -71,9 +71,11 @@ Run the following command to deploy:
 `npm run deploy:<type> $network_name_here$`
 For instance, running
 
-npx hardhat run deploy:deployer polygon_mumbai
+`npx hardhat run deploy:deployer polygon_mumbai`
 would result in something like this
 
+```txt
 [ ✅ ] Deployer deployed to: 0x34C4db97cE4cA2cce48757F85C954C5647124106 with fee: 100 and heartbeat: 120
+```
 
 There are multiple deployment scripts which you can check in the package.json file, under the `scripts` section.
