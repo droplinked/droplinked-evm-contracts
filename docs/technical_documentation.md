@@ -209,12 +209,3 @@ struct PurchaseSignature {
 ## Upgrade Paths
 
 The Deployer contract uses the OpenZeppelin Upgradeable pattern, allowing for future upgrades to functionality while preserving deployed shops and data.
-
-## Network Support
-
-The contracts are designed to be deployed on various EVM-compatible chains, including:
-
-- Polygon
-- Binance Smart Chain
-- Hedera (EVM)
-- Ripple sidechain
