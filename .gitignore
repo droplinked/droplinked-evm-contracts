@@ -14,3 +14,5 @@ node_modules
 /coverage.json
 .openzeppelin/unknown-1564830818.json
 .openzeppelin/mainnet.json
+.openzeppelin/*
+.openzeppelin
