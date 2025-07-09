@@ -75,7 +75,7 @@ For instance, running
 would result in something like this
 
 ```txt
-[ ✅ ] Deployer deployed to: 0x34C4db97cE4cA2cce48757F85C954C5647124106 with fee: 100 and heartbeat: 120
+[ ✅ ] Deployer deployed to: 0x34C4db97cE4cA2cce48757F85C954C5647124106
 ```
 
 There are multiple deployment scripts which you can check in the package.json file, under the `scripts` section.
