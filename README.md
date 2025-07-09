@@ -71,11 +71,16 @@ Run the following command to deploy:
 `npm run deploy:<type> -- $network_name_here$`
 For instance, running
 
-`npx hardhat run deploy:deployer polygon_mumbai`
+`npx hardhat run deploy:deployer -- polygon_mumbai`
 would result in something like this
 
 ```txt
 [ ✅ ] Deployer deployed to: 0x34C4db97cE4cA2cce48757F85C954C5647124106
 ```
 
-There are multiple deployment scripts which you can check in the package.json file, under the `scripts` section.
+There are multiple deployment scripts which you can check in the package.json file, under the `scripts` section, which include:
+
+- `deploy:deployer` - Deploys the main deployer contract.
+- `deploy:utils` - Deploys the utils contract.
+- `deploy:payment` - Deploys the payment proxy contract.
+- `deploy:airdrop` - Deploys the bulk token distributor contract.
