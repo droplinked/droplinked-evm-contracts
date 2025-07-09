@@ -1,6 +1,6 @@
 # Droplinked Solidity Contracts
 
-This repository contains the droplinked's smart-contract source code for EVM chains that droplinked integrates with, including : Polygon, Binance, Hedera and Ripple sidechain
+This repository contains the droplinked's smart-contracts for EVM chains that droplinked integrates with, including : Ethereum, Polygon, Base, BSC, Bitlayer, and more.
 
 ## Documentations
 
