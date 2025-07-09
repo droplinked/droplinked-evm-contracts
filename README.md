@@ -13,7 +13,7 @@ For detailed technical documentation of the smart contract architecture and comp
 To run the tests on the contract you can run the following command in the dev branch:
 `npm run test`
 
-```
+```txt
 ❯ npx hardhat test
 
 
@@ -65,15 +65,15 @@ Shop Owner: 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 , owner account: 0xf39Fd6
 
 To deploy the contract to a network, follow these steps:
 
-Add your network to the `hardhat.config.ts` file, by simply looking at the exapmles that are there
+Add your network to the `hardhat.config.ts` file, by simply looking at the Examples that are there
 Put your etherscan `api key` in the etherscan part
-Run the following command to deploy :
-`npx hardhat run scripts/deploy.ts --network $network_name_here$`
+Run the following command to deploy:
+`npm run deploy:<type> $network_name_here$`
 For instance, running
 
-npx hardhat run scripts/deploy.ts --network polygon_mumbai
+npx hardhat run deploy:deployer polygon_mumbai
 would result in something like this
 
 [ ✅ ] Deployer deployed to: 0x34C4db97cE4cA2cce48757F85C954C5647124106 with fee: 100 and heartbeat: 120
 
-[ ✅ ] PaymentProxy deployed to: 0x34C4db97cE4cA2cce48757F85C954C5647124106
+There are multiple deployment scripts which you can check in the package.json file, under the `scripts` section.
