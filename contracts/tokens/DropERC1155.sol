@@ -3,97 +3,135 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../structs/structs.sol";
+import "../structs/Structs.sol";
 
-contract DroplinkedToken is ERC1155, Ownable{
-    event MintEvent(uint tokenId, address recipient, uint amount, string uri);
+contract DroplinkedToken is ERC1155, Ownable {
+    event MintEvent(
+        uint256 tokenId,
+        address recipient,
+        uint256 amount,
+        string uri
+    );
     event ManageWalletUpdated(address newManagedWallet);
-    event FeeUpdated(uint newFee);
+    event FeeUpdated(uint256 newFee);
+    event OperatorChanged(address newOperator);
+    event MinterUpdated(address minter, bool state);
 
     address operatorContract;
-    uint public totalSupply;
-    uint public fee;
-    string public name = "Droplinked";
-    string public symbol = "DROP";
-    uint public tokenCnt;
+    uint256 public totalSupply;
+    uint256 public fee;
+    string public constant name = "Droplinked";
+    string public constant symbol = "DROP";
+    uint256 public tokenCnt;
     address public managedWallet = 0x8c906310C5F64fe338e27Bd9fEf845B286d0fc1e;
-    mapping(address => bool) public minterAddresses; 
-    mapping(uint => string) public uris;
-    mapping(bytes32 => uint) public tokenIdByHash;
-    mapping(uint => uint) public tokenCnts;
+    mapping(address => bool) public minterAddresses;
+    mapping(uint256 => string) public uris;
+    mapping(bytes32 => uint256) public tokenIdByHash;
+    mapping(uint256 => uint256) public tokenCnts;
     mapping(uint256 => Issuer) public issuers;
 
-    constructor(address _droplinkedOperator) ERC1155("") Ownable(tx.origin){
+    constructor(
+        address droplinkedOperator_,
+        address owner_
+    ) ERC1155("") Ownable(owner_) {
         fee = 100;
-        operatorContract = _droplinkedOperator;
+        if (droplinkedOperator_ == address(0)) {
+            revert("Operator address cannot be zero");
+        }
+        operatorContract = droplinkedOperator_;
         minterAddresses[operatorContract] = true;
     }
 
-    modifier onlyOperator(){
-        require(msg.sender == operatorContract, "Only the operator can call this contract");
+    modifier onlyOperator() {
+        require(
+            msg.sender == operatorContract,
+            "Only the operator can call this contract"
+        );
         _;
     }
 
     modifier onlyMinter() {
-        require(minterAddresses[msg.sender], "Only Minters can call Mint Function");
+        require(
+            minterAddresses[msg.sender],
+            "Only Minters can call Mint Function"
+        );
         _;
     }
 
-    function changeOperator(address _newOperatorContract) external onlyOperator() {
-        operatorContract = _newOperatorContract;
+    function changeOperator(
+        address newOperatorContract_
+    ) external onlyOperator {
+        require(
+            newOperatorContract_ != address(0),
+            "New operator address cannot be zero"
+        );
+        operatorContract = newOperatorContract_;
+        emit OperatorChanged(newOperatorContract_);
     }
 
-    function setMinter(address _minter, bool _state) external onlyOperator() {
-        minterAddresses[_minter] = _state;
+    function setMinter(address minter_, bool state_) external onlyOperator {
+        minterAddresses[minter_] = state_;
+        emit MinterUpdated(minter_, state_);
     }
 
-    function getOwnerAmount(uint tokenId, address _owner) external view returns (uint){
-        return balanceOf(_owner, tokenId);
+    function getOwnerAmount(
+        uint256 tokenId,
+        address owner_
+    ) external view returns (uint256) {
+        return balanceOf(owner_, tokenId);
     }
 
-    function getTokenCnt() external view returns (uint){
+    function getTokenCnt() external view returns (uint256) {
         return tokenCnt;
     }
 
-    function getTokenIdByHash(bytes32 metadataHash) external view returns (uint){
+    function getTokenIdByHash(
+        bytes32 metadataHash
+    ) external view returns (uint256) {
         return tokenIdByHash[metadataHash];
     }
 
-    function getTokenAmount(uint tokenId) external view returns (uint){
+    function getTokenAmount(uint256 tokenId) external view returns (uint256) {
         return tokenCnts[tokenId];
     }
-    
-    function getTotalSupply() external view returns (uint){
+
+    function getTotalSupply() external view returns (uint256) {
         return totalSupply;
     }
 
-    function uri(uint tokenId) public view virtual override returns (string memory) {
+    function uri(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
         return uris[tokenId];
     }
-    
-    function getManagedWallet() external view returns (address){
+
+    function getManagedWallet() external view returns (address) {
         return managedWallet;
     }
 
-    function setManagedWallet(address _newManagedWallet) external onlyOwner {
-        managedWallet = _newManagedWallet;
-        emit ManageWalletUpdated(_newManagedWallet);
+    function setManagedWallet(address newManagedWallet_) external onlyOwner {
+        require(
+            newManagedWallet_ != address(0),
+            "New managed wallet address cannot be zero"
+        );
+        managedWallet = newManagedWallet_;
+        emit ManageWalletUpdated(newManagedWallet_);
     }
 
-    function setFee(uint _fee) external onlyOperator {
-        fee = _fee;
-        emit FeeUpdated(_fee);
+    function setFee(uint256 fee_) external onlyOperator {
+        fee = fee_;
+        emit FeeUpdated(fee_);
     }
 
-    function getFee() external view returns (uint){
+    function getFee() external view returns (uint256) {
         return fee;
     }
 
     function safeBatchTransferFrom(
         address from,
         address to,
-        uint[] memory ids,
-        uint[] memory amounts,
+        uint256[] memory ids,
+        uint256[] memory amounts,
         bytes memory data
     ) public virtual override {
         require(
@@ -106,11 +144,11 @@ contract DroplinkedToken is ERC1155, Ownable{
     function safeTransferFrom(
         address from,
         address to,
-        uint id,
-        uint amount,
+        uint256 id,
+        uint256 amount,
         bytes memory data
     ) public virtual override {
-        if(msg.sender != operatorContract){
+        if (msg.sender != operatorContract) {
             require(
                 from == _msgSender() || isApprovedForAll(from, _msgSender()),
                 "ERC1155: caller is not token owner or approved"
@@ -119,19 +157,19 @@ contract DroplinkedToken is ERC1155, Ownable{
         _safeTransferFrom(from, to, id, amount, data);
     }
 
-    function getIssuer(uint256 tokenId) external view returns(Issuer memory) {
+    function getIssuer(uint256 tokenId) external view returns (Issuer memory) {
         return issuers[tokenId];
     }
 
     function mint(
-        string calldata _uri,
-        uint amount,
+        string calldata uri_,
+        uint256 amount,
         address receiver,
         uint256 royalty,
         bool accepted
-    ) external onlyMinter() returns (uint){ 
-        bytes32 metadata_hash = keccak256(abi.encode(_uri));
-        uint tokenId = tokenIdByHash[metadata_hash];
+    ) external onlyMinter returns (uint256) {
+        bytes32 metadata_hash = keccak256(abi.encode(uri_));
+        uint256 tokenId = tokenIdByHash[metadata_hash];
         if (tokenId == 0) {
             tokenId = tokenCnt + 1;
             tokenCnt++;
@@ -145,18 +183,23 @@ contract DroplinkedToken is ERC1155, Ownable{
         if (minterAddresses[msg.sender]) {
             _setApprovalForAll(receiver, msg.sender, true);
         }
-        if(msg.sender == operatorContract){
+        if (msg.sender == operatorContract) {
             _setApprovalForAll(receiver, operatorContract, true);
             if (accepted) _setApprovalForAll(receiver, managedWallet, true);
         }
-        uris[tokenId] = _uri;
-        emit URI(_uri, tokenId);
-        emit MintEvent(tokenId, tx.origin, amount, _uri);
+        uris[tokenId] = uri_;
+        emit URI(uri_, tokenId);
+        emit MintEvent(tokenId, tx.origin, amount, uri_);
         return tokenId;
     }
 
-    function droplinkedSafeBatchTransferFrom(address from, address[] memory to, uint[] memory ids, uint[] memory amounts) external {
-        for (uint i = 0; i < to.length; i++) {
+    function droplinkedSafeBatchTransferFrom(
+        address from,
+        address[] memory to,
+        uint256[] memory ids,
+        uint256[] memory amounts
+    ) external {
+        for (uint256 i = 0; i < to.length; i++) {
             safeTransferFrom(from, to[i], ids[i], amounts[i], "");
         }
     }

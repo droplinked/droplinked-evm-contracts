@@ -1,11 +1,12 @@
-## 1. Contract Overview
+# 1. Contract Overview
 
-### Interface: `IDIP1`
+## Interface: `IDIP1`
+
 - **Purpose:** A blueprint for contracts managing decentralized shops, product registration, and affiliate systems.
 - **Imports:**
   - External structs from a `structs.sol` file for structured data management.
 - **Core Features:**
-  - Product registration and unregistration.
+  - Product registration and reverse.
   - Affiliate request management (creation, approval, and disapproval).
   - Shop metadata retrieval.
   - Batch operations for product minting and registration.
@@ -28,6 +29,7 @@
 ## 3. Functions
 
 ### Key Functions
+
 | **Function Name**              | **Inputs**                              | **Outputs**                     | **Visibility**  | **Description**                                      |
 |---------------------------------|------------------------------------------|----------------------------------|-----------------|------------------------------------------------------|
 | `getShopName`                   | None                                     | `string`                        | `external`      | Returns the name of the shop.                       |

@@ -6,10 +6,12 @@ import 'hardhat-interface-generator';
 
 require('dotenv').config();
 
+const INFURA_API_KEY = process.env.INFURA_API_KEY;
+
 const config: HardhatUserConfig = {
 	networks: {
 		ethereumMainnet: {
-			url: 'https://mainnet.infura.io/v3/55bd630c4e164c04bb27fff3f59babb0',
+			url: `https://mainnet.infura.io/v3/${INFURA_API_KEY}`,
 			chainId: 1,
 			accounts: [process.env.PRIVATE_KEY as string],
 		},
@@ -60,7 +62,7 @@ const config: HardhatUserConfig = {
 			accounts: [process.env.PRIVATE_KEY as string],
 		},
 		sepolia: {
-			url: 'https://sepolia.infura.io/v3/55bd630c4e164c04bb27fff3f59babb0',
+			url: `https://sepolia.infura.io/v3/${INFURA_API_KEY}`,
 			chainId: 11155111,
 			accounts: [process.env.PRIVATE_KEY as string],
 		},

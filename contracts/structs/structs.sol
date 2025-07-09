@@ -36,7 +36,7 @@ enum ProductType {
 
 struct Issuer {
     address issuer;
-    uint royalty;
+    uint256 royalty;
 }
 
 struct RecordData {

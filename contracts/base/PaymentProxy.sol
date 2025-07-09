@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "../structs/structs.sol";
+import "../structs/Structs.sol";
 
 interface AggregatorV3Interface {
     function getRoundData(
@@ -30,28 +30,35 @@ contract DroplinkedPaymentProxy is Ownable {
     /// @dev Error for reporting outdated price data.
     error oldPrice(uint256 priceTimestamp, uint256 currentTimestamp);
 
+    /// @dev Error for reporting invalid or stale price data.
+    error InvalidPriceOrStale(
+        int256 price,
+        uint256 priceTimestamp,
+        uint256 currentTimestamp
+    );
+
     /// @notice Time window for considering price data valid.
-    uint public heartBeat;
+    uint256 public heartbeat;
 
-    /// @notice Emitted when heartBeat is changed.
-    event HeartBeatChanged(uint newHeartBeat);
+    /// @notice Emitted when heartbeat is changed.
+    event HeartbeatChanged(uint256 newHeartbeat);
 
-    AggregatorV3Interface internal priceFeed;
+    AggregatorV3Interface internal immutable priceFeed;
 
     event ProductPurchased(string memo);
 
     constructor(
-        uint256 _heartBeat,
-        address _chainLinkProvider
+        uint256 heartbeat_,
+        address chainLinkProvider_
     ) Ownable(msg.sender) {
-        heartBeat = _heartBeat;
-        priceFeed = AggregatorV3Interface(_chainLinkProvider);
+        heartbeat = heartbeat_;
+        priceFeed = AggregatorV3Interface(chainLinkProvider_);
     }
 
-    /// @param _heartBeat The new heartBeat to set.
-    function changeHeartBeat(uint _heartBeat) external onlyOwner {
-        heartBeat = _heartBeat;
-        emit HeartBeatChanged(_heartBeat);
+    /// @param heartbeat_ The new heartbeat to set.
+    function changeHeartbeat(uint256 heartbeat_) external onlyOwner {
+        heartbeat = heartbeat_;
+        emit HeartbeatChanged(heartbeat_);
     }
 
     /**
@@ -60,23 +67,16 @@ contract DroplinkedPaymentProxy is Ownable {
      * @return price The price of the asset.
      * @return timestamp The timestamp when the price was recorded.
      */
-    function getLatestPrice(uint80 roundId) internal view returns (uint, uint) {
+    function getLatestPrice(
+        uint80 roundId
+    ) internal view returns (uint256, uint256) {
         (, int256 price, , uint256 timestamp, ) = priceFeed.getRoundData(
             roundId
         );
-        if (price == 0) {
-            revert(
-                string(
-                    abi.encodePacked(
-                        "Invalid price or outdated timestamp. Price timestamp: ",
-                        timestamp,
-                        ", Current timestamp: ",
-                        block.timestamp
-                    )
-                )
-            );
+        if (price <= 0) {
+            revert InvalidPriceOrStale(price, timestamp, block.timestamp);
         }
-        return (uint(price), timestamp);
+        return (uint256(price), timestamp);
     }
 
     /**
@@ -85,7 +85,10 @@ contract DroplinkedPaymentProxy is Ownable {
      * @param ratio The conversion ratio.
      * @return The converted value.
      */
-    function toNativePrice(uint value, uint ratio) private pure returns (uint) {
+    function toNativePrice(
+        uint256 value,
+        uint256 ratio
+    ) private pure returns (uint256) {
         return (1e24 * value) / ratio;
     }
 
@@ -98,14 +101,14 @@ contract DroplinkedPaymentProxy is Ownable {
      * @return The total value transferred.
      */
     function transferTBDValues(
-        uint[] memory tbdValues,
+        uint256[] memory tbdValues,
         address[] memory tbdReceivers,
-        uint ratio,
+        uint256 ratio,
         address currency
-    ) private returns (uint) {
-        uint currentValue = 0;
-        for (uint i = 0; i < tbdReceivers.length; i++) {
-            uint value = currency == address(0)
+    ) private returns (uint256) {
+        uint256 currentValue = 0;
+        for (uint256 i = 0; i < tbdReceivers.length; i++) {
+            uint256 value = currency == address(0)
                 ? toNativePrice(tbdValues[i], ratio)
                 : tbdValues[i];
             if (currency == address(1)) value = tbdValues[i];
@@ -134,23 +137,29 @@ contract DroplinkedPaymentProxy is Ownable {
      * @param roundId The Chainlink round ID for price data.
      */
     function droplinkedPurchase(
-        uint[] memory tbdValues,
+        uint256[] memory tbdValues,
         address[] memory tbdReceivers,
         address currency,
         uint80 roundId,
         string memory memo
     ) public payable {
-        uint ratio = 0;
+        uint256 ratio = 0;
         if (currency == address(0)) {
             uint256 timestamp;
             (ratio, timestamp) = getLatestPrice(roundId);
-            if (ratio == 0) revert("Chainlink Contract not found");
+            if (ratio == 0 || timestamp > block.timestamp) {
+                revert InvalidPriceOrStale(
+                    int256(ratio),
+                    timestamp,
+                    block.timestamp
+                );
+            }
             if (
                 block.timestamp > timestamp &&
-                block.timestamp - timestamp > 2 * heartBeat
+                block.timestamp - timestamp > 2 * heartbeat
             ) revert oldPrice(timestamp, block.timestamp);
         }
-        transferTBDValues(tbdValues, tbdReceivers, ratio, currency);
         emit ProductPurchased(memo);
+        transferTBDValues(tbdValues, tbdReceivers, ratio, currency);
     }
 }

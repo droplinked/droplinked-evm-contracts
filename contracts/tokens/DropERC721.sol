@@ -3,97 +3,129 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "../structs/structs.sol";
+import "../structs/Structs.sol";
 
-contract DroplinkedToken721 is ERC721, Ownable{
-    event MintEvent(uint tokenId, address recipient, uint amount, string uri);
+contract DroplinkedToken721 is ERC721, Ownable {
+    event MintEvent(
+        uint256 tokenId,
+        address recipient,
+        uint256 amount,
+        string uri
+    );
     event ManageWalletUpdated(address newManagedWallet);
-    event FeeUpdated(uint newFee);
+    event FeeUpdated(uint256 newFee);
+    event OperatorChanged(address newOperator);
+    event MinterUpdated(address minter, bool state);
 
     address operatorContract;
-    uint public totalSupply;
-    uint public fee;
-    uint public tokenCnt;
+    uint256 public totalSupply;
+    uint256 public fee;
+    uint256 public tokenCnt;
     address public managedWallet = 0x8c906310C5F64fe338e27Bd9fEf845B286d0fc1e;
     mapping(address => bool) public minterAddresses;
-    mapping(uint => string) public uris;
-    mapping(bytes32 => uint) public tokenIdByHash;
-    mapping(uint => uint) public tokenCnts;
+    mapping(uint256 => string) public uris;
+    mapping(bytes32 => uint256) public tokenIdByHash;
+    mapping(uint256 => uint256) public tokenCnts;
     mapping(uint256 => Issuer) public issuers;
 
-    constructor(address _droplinkedOperator) Ownable(tx.origin) ERC721("DropCollection", "DRP"){
+    constructor(
+        address _droplinkedOperator
+    ) Ownable(tx.origin) ERC721("DropCollection", "DRP") {
         fee = 100;
+        if (_droplinkedOperator == address(0)) {
+            revert("Operator address cannot be zero");
+        }
         operatorContract = _droplinkedOperator;
         minterAddresses[operatorContract] = true;
     }
 
-    modifier onlyOperator(){
-        require(msg.sender == operatorContract, "Only the operator can call this contract");
+    modifier onlyOperator() {
+        require(
+            msg.sender == operatorContract,
+            "Only the operator can call this contract"
+        );
         _;
     }
 
     modifier onlyMinter() {
-        require(minterAddresses[msg.sender], "Only Minters can call Mint Function");
+        require(
+            minterAddresses[msg.sender],
+            "Only Minters can call Mint Function"
+        );
         _;
     }
 
-    function changeOperator(address _newOperatorContract) external onlyOperator() {
-        operatorContract = _newOperatorContract;
+    function changeOperator(
+        address newOperatorContract_
+    ) external onlyOperator {
+        require(
+            newOperatorContract_ != address(0),
+            "New operator address cannot be zero"
+        );
+        operatorContract = newOperatorContract_;
+        emit OperatorChanged(newOperatorContract_);
     }
 
-    function setMinter(address _minter, bool _state) external onlyOperator() {
-        minterAddresses[_minter] = _state;
+    function setMinter(address minter_, bool state_) external onlyOperator {
+        minterAddresses[minter_] = state_;
+        emit MinterUpdated(minter_, state_);
     }
 
-    function getOwnerAmount(address _owner) external view returns (uint){
-        return balanceOf(_owner);
+    function getOwnerAmount(address owner_) external view returns (uint256) {
+        return balanceOf(owner_);
     }
 
-    function getTokenCnt() external view returns (uint){
+    function getTokenCnt() external view returns (uint256) {
         return tokenCnt;
     }
 
-    function getTokenIdByHash(bytes32 metadataHash) external view returns (uint){
+    function getTokenIdByHash(
+        bytes32 metadataHash
+    ) external view returns (uint256) {
         return tokenIdByHash[metadataHash];
     }
 
-    function getTokenAmount(uint tokenId) external view returns (uint){
+    function getTokenAmount(uint256 tokenId) external view returns (uint256) {
         return tokenCnts[tokenId];
     }
-    
-    function getTotalSupply() external view returns (uint){
+
+    function getTotalSupply() external view returns (uint256) {
         return totalSupply;
     }
 
-    function uri(uint tokenId) public view virtual returns (string memory) {
+    function uri(uint256 tokenId) public view virtual returns (string memory) {
         return uris[tokenId];
     }
-    
-    function getManagedWallet() external view returns (address){
+
+    function getManagedWallet() external view returns (address) {
         return managedWallet;
     }
 
-    function setManagedWallet(address _newManagedWallet) external onlyOwner {
-        managedWallet = _newManagedWallet;
-        emit ManageWalletUpdated(_newManagedWallet);
+    function setManagedWallet(address newManagedWallet_) external onlyOwner {
+        require(
+            newManagedWallet_ != address(0),
+            "New managed wallet address cannot be zero"
+        );
+        managedWallet = newManagedWallet_;
+        emit ManageWalletUpdated(newManagedWallet_);
     }
 
-    function setFee(uint _fee) external onlyOperator {
-        fee = _fee;
-        emit FeeUpdated(_fee);
+    function setFee(uint256 fee_) external onlyOperator {
+        fee = fee_;
+        emit FeeUpdated(fee_);
     }
 
-    function getFee() external view returns (uint){
+    function getFee() external view returns (uint256) {
         return fee;
     }
 
     function safeTransferFrom(
         address from,
         address to,
-        uint id,
+        uint256 id,
         bytes memory
     ) public virtual override {
-        if(msg.sender != operatorContract){
+        if (msg.sender != operatorContract) {
             require(
                 from == _msgSender() || isApprovedForAll(from, _msgSender()),
                 "ERC721: caller is not token owner or approved"
@@ -102,18 +134,18 @@ contract DroplinkedToken721 is ERC721, Ownable{
         _safeTransfer(from, to, id);
     }
 
-    function getIssuer(uint256 tokenId) external view returns(Issuer memory) {
+    function getIssuer(uint256 tokenId) external view returns (Issuer memory) {
         return issuers[tokenId];
     }
 
     function mint(
-        string calldata _uri,
+        string calldata uri_,
         address receiver,
         uint256 royalty,
         bool accepted
-    ) external onlyMinter() returns (uint){ 
-        bytes32 metadata_hash = keccak256(abi.encode(_uri));
-        uint tokenId = tokenIdByHash[metadata_hash];
+    ) external onlyMinter returns (uint256) {
+        bytes32 metadata_hash = keccak256(abi.encode(uri_));
+        uint256 tokenId = tokenIdByHash[metadata_hash];
         if (tokenId == 0) {
             tokenId = tokenCnt + 1;
             tokenCnt++;
@@ -127,17 +159,21 @@ contract DroplinkedToken721 is ERC721, Ownable{
         if (minterAddresses[msg.sender]) {
             _setApprovalForAll(receiver, msg.sender, true);
         }
-        if(msg.sender == operatorContract){
+        if (msg.sender == operatorContract) {
             _setApprovalForAll(receiver, operatorContract, true);
             if (accepted) _setApprovalForAll(receiver, managedWallet, true);
         }
-        uris[tokenId] = _uri;
-        emit MintEvent(tokenId, tx.origin, 1, _uri);
+        uris[tokenId] = uri_;
+        emit MintEvent(tokenId, tx.origin, 1, uri_);
         return tokenId;
     }
 
-    function droplinkedSafeBatchTransferFrom(address from, address[] memory to, uint[] memory ids) external {
-        for (uint i = 0; i < to.length; i++) {
+    function droplinkedSafeBatchTransferFrom(
+        address from,
+        address[] memory to,
+        uint256[] memory ids
+    ) external {
+        for (uint256 i = 0; i < to.length; i++) {
             safeTransferFrom(from, to[i], ids[i], "");
         }
     }

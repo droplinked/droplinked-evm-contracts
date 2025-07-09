@@ -1,44 +1,19 @@
 {
-	"name": "droplinked-contracts-v2",
-	"version": "1.0.0",
-	"description": "droplinked contracts refactored",
+	"name": "droplinked-contracts-v3",
+	"version": "3.0.0",
+	"description": "droplinked contracts latest version",
 	"main": "index.js",
 	"scripts": {
 		"compile": "npx hardhat compile",
 		"test": "npx hardhat test",
-		"deploy:bscTestnet": "npx hardhat run deploy/deploy.ts --network bscTestnet",
-		"airdrop:bscTestnet": "npx hardhat run deploy/deployAirdrop.ts --network bscTestnet",
-		"airdrop:bsc": "npx hardhat run deploy/deployAirdrop.ts --network bsc",
-		"deploy:ethereum": "npx hardhat run deploy/deploy.ts --network ethereumMainnet",
-		"deploy:bsc": "npx hardhat run deploy/deploy.ts --network bsc",
-		"deploy:base": "npx hardhat run deploy/deploy.ts --network base",
-		"deploy:baseSepolia": "npx hardhat run deploy/deploy.ts --network baseSepolia",
-		"airdrop:baseSepolia": "npx hardhat run deploy/deployAirdrop.ts --network baseSepolia",
-		"airdrop:base": "npx hardhat run deploy/deployAirdrop.ts --network base",
-		"deploy:sepolia": "npx hardhat run deploy/deploy.ts --network sepolia",
-		"airdrop:sepolia": "npx hardhat run deploy/deployAirdrop.ts --network sepolia",
-		"deploy:linea": "npx hardhat run deploy/deploy.ts --network linea",
-		"deploy:polygon": "npx hardhat run deploy/deploy.ts --network polygon",
-		"deploy:polygonAmoy": "npx hardhat run deploy/deploy.ts --network polygonAmoy",
-		"airdrop:polygonAmoy": "npx hardhat run deploy/deployAirdrop.ts --network polygonAmoy",
-		"airdrop:polygon": "npx hardhat run deploy/deployAirdrop.ts --network polygon",
-		"deploy:bedi": "npx hardhat run deploy/deployBedi.ts --network base",
-		"deploy:skale": "npx hardhat run deploy/deploy.ts --network skale",
-		"deploy:skaleCalypso": "npx hardhat run deploy/deploy.ts --network skaleCalypso",
-		"airdrop:skaleCalypso": "npx hardhat run deploy/deployAirdrop.ts --network skaleCalypso",
-		"airdrop:skale": "npx hardhat run deploy/deployAirdrop.ts --network skale",
-		"deploy:redbellyTestnet": "npx hardhat run deploy/deployDeployer.ts --network redbellyTestNet",
-		"airdrop:redbellyTestnet": "npx hardhat run deploy/deployAirdrop.ts --network redbellyTestNet",
-		"airdrop:redbelly": "npx hardhat run deploy/deployAirdrop.ts --network redbelly",
-		"deploy:redbelly": "npx hardhat run deploy/deployDeployer.ts --network redbelly",
-		"deploy:bitlayerTestnet": "npx hardhat run deploy/deploy.ts --network bitlayerTestnet",
-		"airdrop:bitlayerTestnet": "npx hardhat run deploy/deployAirdrop.ts --network bitlayerTestnet",
-		"airdrop:bitlayer": "npx hardhat run deploy/deployAirdrop.ts --network bitlayer",
-		"deploy:bitlayer": "npx hardhat run deploy/deployDeployer.ts --network bitlayer"
+		"deploy:payment": "npx hardhat run deploy/deployPaymentContract.ts.ts --network",
+		"deploy:airdrop": "npx hardhat run deploy/deployAirdrop.ts --network",
+		"deploy:deployer": "npx hardhat run deploy/deployDeployer.ts --network",
+		"deploy:utils": "npx hardhat run deploy/deployUtils.ts --network"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/droplinked/droplinked-contracts-v2.git"
+		"url": "git+https://github.com/droplinked/droplinked-contracts-v3.git"
 	},
 	"keywords": [
 		"droplinked",
@@ -50,21 +25,21 @@
 	"author": "k3rn3lpanic",
 	"license": "MIT",
 	"bugs": {
-		"url": "https://github.com/droplinked/droplinked-contracts-v2/issues"
+		"url": "https://github.com/droplinked/droplinked-contracts-v3/issues"
 	},
-	"homepage": "https://github.com/droplinked/droplinked-contracts-v2#readme",
+	"homepage": "https://github.com/droplinked/droplinked-contracts-v3#readme",
 	"devDependencies": {
 		"@nomicfoundation/hardhat-toolbox": "5.0.0",
 		"hardhat": "^2.22.15"
 	},
 	"dependencies": {
-		"@chainlink/contracts": "^0.6.1",
-		"@nomicfoundation/hardhat-ethers": "^3.0.5",
-		"@openzeppelin/contracts": "^5.0.0",
-		"@openzeppelin/contracts-upgradeable": "^5.0.2",
+		"@chainlink/contracts": "1.4.0",
+		"@nomicfoundation/hardhat-ethers": "3.0.9",
+		"@openzeppelin/contracts": "5.3.0",
+		"@openzeppelin/contracts-upgradeable": "5.3.0",
 		"@openzeppelin/hardhat-upgrades": "^3.1.0",
 		"@uniswap/v3-periphery": "^1.4.4",
-		"dotenv": "^16.4.5",
+		"dotenv": "17.2.0",
 		"hardhat-interface-generator": "^0.0.6",
 		"prompt-sync": "^4.2.0"
 	}

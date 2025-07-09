@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
-import "../structs/structs.sol";
+import "../structs/Structs.sol";
 
 interface IDropShop {
-    function _shopInfo()
+    function shopInfo()
         external
         view
         returns (
@@ -90,13 +90,7 @@ interface IDropShop {
             uint8 productType,
             uint256 affiliatePercentage
         );
-    function registerProduct(
-        uint256 _tokenId,
-        address _nftAddress,
-        uint256 _affiliatePercentage,
-        uint8 _nftType,
-        uint8 _productType
-    ) external returns (uint256);
+    function registerProduct(Product memory product) external returns (uint256);
     function renounceOwnership() external;
     function requestAffiliate(uint256 productId) external returns (uint256);
     function supportsInterface(bytes4 interfaceId) external view returns (bool);

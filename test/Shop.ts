@@ -44,7 +44,7 @@ describe('Shop', function () {
 
 	beforeEach(async function () {
 		[owner, firstUser, secondUser] = await ethers.getSigners();
-		const ChainLink = await ethers.getContractFactory('chainLink');
+		const ChainLink = await ethers.getContractFactory('ChainLinkTest');
 		const chainlink = await ChainLink.deploy();
 		const Deployer = await ethers.getContractFactory('DropShopDeployer');
 		deployer = (await upgrades.deployProxy(Deployer, [120, secondUser.address, 100], {
@@ -93,12 +93,12 @@ describe('Shop', function () {
 
 	describe('Set & Update heartbeat', function () {
 		it('Should update the heartbeat with owner account', async function () {
-			await deployer.connect(owner).setHeartBeat(4000);
-			expect(await deployer.getHeartBeat()).to.equal(4000);
+			await deployer.connect(owner).setHeartbeat(4000);
+			expect(await deployer.getHeartbeat()).to.equal(4000);
 		});
 		it('should not update the heartbeat with other account', async function () {
 			await expect(
-				deployer.connect(firstUser).setHeartBeat(4000)
+				deployer.connect(firstUser).setHeartbeat(4000)
 			).to.be.revertedWithCustomError(deployer, 'OwnableUnauthorizedAccount');
 		});
 	});

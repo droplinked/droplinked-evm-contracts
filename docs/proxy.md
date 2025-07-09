@@ -1,6 +1,7 @@
-## 1. Contract Overview
+# 1. Contract Overview
 
-### Contract: `DroplinkedPaymentProxy`
+## Contract: `DroplinkedPaymentProxy`
+
 - **Purpose:** Provides a payment proxy system with Chainlink Price Feeds for processing purchases in different currencies, including native tokens and ERC20 tokens. It also handles affiliate payments and tracks purchase details.
 - **Imports:**
   - OpenZeppelin's `IERC20` for token transfers and `Ownable` for ownership control.
@@ -24,6 +25,7 @@
 ## 3. Functions
 
 ### Key Functions
+
 | **Function Name**         | **Inputs**                              | **Outputs**                     | **Visibility**  | **Description**                                      |
 |----------------------------|------------------------------------------|----------------------------------|-----------------|------------------------------------------------------|
 | `changeHeartBeat`          | `_heartBeat: uint`                      | None                            | `external`      | Allows the owner to update the heartbeat interval.   |
@@ -48,6 +50,6 @@
 ---
 
 ## 5. Additional Notes
+
 - **Memo Tracking:** The `ProductPurchased` event includes a purchase memo for tracking purposes.
 - **Affiliate Support:** `droplinkedPurchase` can manage affiliate payouts through the `tbdReceivers` parameter.
-

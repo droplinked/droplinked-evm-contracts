@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "../structs/structs.sol";
+import "../structs/Structs.sol";
 
 interface IDIP1 {
     error AlreadyRequested(address requester, uint256 productId);
@@ -62,13 +62,7 @@ interface IDIP1 {
     function getProductId(
         Product memory product
     ) external pure returns (uint256);
-    function registerProduct(
-        uint256 _tokenId,
-        address _nftAddress,
-        uint256 _affiliatePercentage,
-        NFTType _nftType,
-        ProductType _productType
-    ) external returns (uint256);
+    function registerProduct(Product memory product) external returns (uint256);
     function unregisterProduct(uint256 productId) external;
     function requestAffiliate(uint256 productId) external returns (uint256);
     function approveRequest(uint256 requestId) external;

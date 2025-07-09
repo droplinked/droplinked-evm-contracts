@@ -13,22 +13,32 @@ import "../base/IDropShop.sol";
 contract DropShopDeployer is Initializable, OwnableUpgradeable {
     event ShopDeployed(address shop, address nftContract);
     event DroplinkedFeeUpdated(uint256 newFee);
-    event HeartBeatUpdated(uint256 newHeartBeat);
+    event HeartbeatUpdated(uint256 newHeartbeat);
 
     IDropShop[] public shopAddresses;
     address[] public nftContracts;
     mapping(address shopOwner => address[] shops) public shopOwners;
     mapping(address shopOwner => address[] nftContracts) public nftOwners;
     uint256 public droplinkedFee;
-    uint256 public heartBeat;
+    uint256 public heartbeat;
     address public droplinkedWallet;
-    uint public shopCount;
+    uint256 public shopCount;
 
-    function initialize(uint256 _heartBeat, address _droplinkedWallet, uint256 _droplinkedFee) public initializer {
+    function initialize(
+        uint256 heartbeat_,
+        address droplinkedWallet_,
+        uint256 droplinkedFee_
+    ) public initializer {
         __Ownable_init(msg.sender);
-        heartBeat = _heartBeat;
-        droplinkedWallet = _droplinkedWallet;
-        droplinkedFee = _droplinkedFee;
+        require(
+            droplinkedWallet_ != address(0),
+            "Droplinked wallet cannot be zero address"
+        );
+        heartbeat = heartbeat_;
+        droplinkedWallet = droplinkedWallet_;
+        droplinkedFee = droplinkedFee_;
+        emit HeartbeatUpdated(heartbeat_);
+        emit DroplinkedFeeUpdated(droplinkedFee_);
     }
 
     function setDroplinkedFee(uint256 newFee) external onlyOwner {
@@ -36,31 +46,37 @@ contract DropShopDeployer is Initializable, OwnableUpgradeable {
         emit DroplinkedFeeUpdated(newFee);
     }
 
-    function setHeartBeat(uint256 newHeartBeat) external onlyOwner {
-        heartBeat = newHeartBeat;
-        emit HeartBeatUpdated(newHeartBeat);
+    function setHeartbeat(uint256 newHeartbeat) external onlyOwner {
+        heartbeat = newHeartbeat;
+        emit HeartbeatUpdated(newHeartbeat);
     }
 
     function deployShop(
-        bytes memory bytecode, bytes32 salt
+        bytes memory bytecode,
+        bytes32 salt
     ) external returns (address shop, address nftContract) {
         address deployedShop;
         IDropShop _shop;
         assembly {
-            deployedShop := create2(0, add(bytecode, 0x20), mload(bytecode), salt)
+            deployedShop := create2(
+                0,
+                add(bytecode, 0x20),
+                mload(bytecode),
+                salt
+            )
             if iszero(extcodesize(deployedShop)) {
                 revert(0, 0)
             }
         }
         _shop = IDropShop(deployedShop);
-        DroplinkedToken token = new DroplinkedToken(address(this));
+        DroplinkedToken token = new DroplinkedToken(address(this), msg.sender);
         shopOwners[msg.sender].push(deployedShop);
         nftOwners[msg.sender].push(address(token));
         nftContracts.push(address(token));
         shopAddresses.push(_shop);
-        token.setMinter(deployedShop, true);
         ++shopCount;
         emit ShopDeployed(deployedShop, address(token));
+        token.setMinter(deployedShop, true);
         return (deployedShop, address(token));
     }
 
@@ -68,7 +84,7 @@ contract DropShopDeployer is Initializable, OwnableUpgradeable {
         return droplinkedFee;
     }
 
-    function getHeartBeat() external view returns (uint256) {
-        return heartBeat;
+    function getHeartbeat() external view returns (uint256) {
+        return heartbeat;
     }
 }

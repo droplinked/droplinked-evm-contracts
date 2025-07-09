@@ -1,6 +1,9 @@
+# Overview of Droplinked Contracts
+
 ## 1. Contracts Overview
 
-### A. `Shop.sol` (Contract: `DropShop`)
+## A. `Shop.sol` (Contract: `DropShop`)
+
 - **Purpose:** Acts as a decentralized marketplace with product registration, affiliate management, and NFT minting.
 - **Imports:**
   - OpenZeppelin modules for access control and ERC token interfaces.
@@ -22,7 +25,8 @@
   - **Signature Verification:**
     - `claimPurchase` ensures secure purchase transactions.
 
-### B. `SignatureVerifier.sol`
+## B. `SignatureVerifier.sol`
+
 - **Purpose:** Validates cryptographic signatures for secure purchases.
 - **Core Features:**
   - Verifies integrity and authenticity of purchase requests.
@@ -31,7 +35,8 @@
   - `verifyPurchase`: Main function to validate purchase signatures.
   - `getMessageHash`, `getEthSignedMessageHash`: Utility functions for hashing and Ethereum signing format.
 
-### C. `IDropShop.sol` (Interface)
+## C. `IDropShop.sol` (Interface)
+
 - **Purpose:** Defines the required functions for a compliant marketplace contract.
 - **Core Features:**
   - Metadata retrieval (`_shopInfo`).
@@ -46,6 +51,7 @@
 ## 2. Functions
 
 ### Key Functions from `DropShop`
+
 | **Function Name**               | **Inputs**                               | **Outputs**                     | **Visibility**  | **Description**                                      |
 |----------------------------------|------------------------------------------|----------------------------------|-----------------|------------------------------------------------------|
 | `mintAndRegister`                | `RecordData`                             | `uint256 productId`             | `public`        | Mints and registers a product.                     |
@@ -55,12 +61,14 @@
 | `claimPurchase`                  | `address manager`, `bytes signature`, `PurchaseSignature` | None | `external` | Validates and processes a purchase using a signature. |
 
 ### Key Functions from `SignatureVerifier`
+
 | **Function Name**               | **Inputs**                               | **Outputs**                     | **Visibility**  | **Description**                                      |
 |----------------------------------|------------------------------------------|----------------------------------|-----------------|------------------------------------------------------|
 | `verifyPurchase`                 | `address signer`, `bytes signature`, `PurchaseSignature` | `bool` | `public` | Validates a purchase signature.                    |
 | `getMessageHash`                 | `PurchaseSignature`                      | `bytes32`                       | `public`        | Returns a hash of purchase data for signing.        |
 
 ### Key Functions from `IDropShop`
+
 | **Function Name**               | **Inputs**                               | **Outputs**                     | **Visibility**  | **Description**                                      |
 |----------------------------------|------------------------------------------|----------------------------------|-----------------|------------------------------------------------------|
 | `_shopInfo`                      | None                                     | Shop metadata                   | `external`      | Returns shop information.                           |

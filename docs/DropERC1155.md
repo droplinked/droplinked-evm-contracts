@@ -3,6 +3,7 @@
 ---
 
 ## 1. General Requirements
+
 - **Purpose:** Implements a token contract based on the ERC1155 standard, with extensions for minting, fee management, and operator control.
 - **Solidity Version:** Compatible with Solidity `^0.8.20`.
 - **Features Required:**
@@ -15,6 +16,7 @@
 ## 2. Contract Overview
 
 ### Contract: `DroplinkedToken`
+
 - **Purpose:** Extends the ERC1155 standard to include functionality for controlled minting, fee management, and multi-address token transfers.
 - **Imports:**
   - OpenZeppelin's `ERC1155` for token standard implementation.
@@ -40,6 +42,7 @@
 ## 4. Functions
 
 ### Key Functions
+
 | **Function Name**            | **Inputs**                                           | **Outputs**              | **Visibility**   | **Description**                                   |
 |-------------------------------|-----------------------------------------------------|--------------------------|------------------|---------------------------------------------------|
 | `changeOperator`              | `_newOperatorContract: address`                     | None                     | `external`       | Updates the operator contract address.           |
@@ -80,7 +83,7 @@
 ---
 
 ## 6. Additional Notes
+
 - **Minting Control:** Restricted to addresses with minter privileges.
 - **Enhanced Transfers:** Allows transferring tokens to multiple recipients in a single transaction.
 - **Fee Updates:** Only the operator can update the transaction fee.
-

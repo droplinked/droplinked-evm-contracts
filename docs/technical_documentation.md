@@ -20,14 +20,14 @@ The system comprises several key components working together:
 
 This contract is the central hub for a merchant's storefront, handling product management, affiliate requests, and claim processing.
 
-#### Key Features:
+#### Key Features
 
 - **Product Registration**: Merchants can register products as ERC721 or ERC1155 tokens.
 - **Affiliate System**: Publishers can request to become affiliates for specific products.
 - **Purchase Verification**: Signature-based verification for product purchases.
 - **Access Control**: Role-based permissions with owner and manager capabilities.
 
-#### Main Functions:
+#### Main Functions
 
 - `registerProduct()`: Register a new product in the shop.
 - `mintAndRegister()`: Mint a new NFT token and register it as a product in one transaction.
@@ -41,14 +41,14 @@ This contract is the central hub for a merchant's storefront, handling product m
 
 A customized ERC1155 implementation for representing multi-instance products and digital assets.
 
-#### Key Features:
+#### Main Features
 
 - **Minting**: Create new tokens with royalty information.
 - **Royalty Tracking**: Record creator royalties for each token.
 - **Managed Approvals**: Automatic approval management for the shop contract.
 - **Metadata Management**: URI tracking for token metadata.
 
-#### Main Functions:
+#### Key Functions
 
 - `mint()`: Create a new token or add supply to an existing token.
 - `getIssuer()`: Retrieve the original issuer and royalty information.
@@ -60,13 +60,13 @@ A customized ERC1155 implementation for representing multi-instance products and
 
 Handles payment processing with support for native tokens, ERC20 tokens, and price feed integration.
 
-#### Key Features:
+#### Key Features
 
 - **Chainlink Integration**: Uses Chainlink price feeds for currency conversion.
 - **Multi-currency Support**: Handles payments in native tokens and ERC20 tokens.
 - **Heartbeat Validation**: Ensures price data is recent and valid.
 
-#### Main Functions:
+#### Main Functions
 
 - `droplinkedPurchase()`: Process a purchase with various payment methods.
 - `getLatestPrice()`: Fetch current price data from Chainlink.
@@ -77,13 +77,13 @@ Handles payment processing with support for native tokens, ERC20 tokens, and pri
 
 A factory contract that creates new shop instances and associated NFT contracts.
 
-#### Key Features:
+#### Key Features
 
 - **CREATE2 Deployment**: Uses CREATE2 for deterministic address generation.
 - **Fee Management**: Centralizes fee settings for all shops.
 - **Shop Registry**: Maintains a record of all deployed shops.
 
-#### Main Functions:
+#### Main Functions
 
 - `deployShop()`: Deploy a new shop with associated NFT contract.
 - `setDroplinkedFee()`: Update the platform fee.
@@ -94,12 +94,12 @@ A factory contract that creates new shop instances and associated NFT contracts.
 
 A utility contract for distributing tokens (ERC20, ERC721, ERC1155) to multiple recipients in a gas-efficient manner.
 
-#### Key Features:
+#### Key Features
 
 - **Multi-token Support**: Works with ERC20, ERC721, and ERC1155 tokens.
 - **Batch Processing**: Efficiently processes multiple transfers in a single transaction.
 
-#### Main Functions:
+#### Main Functions
 
 - `distributeERC20()`: Send ERC20 tokens to multiple recipients.
 - `distributeERC721()`: Send ERC721 tokens to multiple recipients.
