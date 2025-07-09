@@ -68,7 +68,7 @@ To deploy the contract to a network, follow these steps:
 Add your network to the `hardhat.config.ts` file, by simply looking at the Examples that are there
 Put your etherscan `api key` in the etherscan part
 Run the following command to deploy:
-`npm run deploy:<type> $network_name_here$`
+`npm run deploy:<type> -- $network_name_here$`
 For instance, running
 
 `npx hardhat run deploy:deployer polygon_mumbai`
