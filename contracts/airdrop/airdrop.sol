@@ -14,9 +14,11 @@ interface IERC20 {
 }
 
 interface IERC721 {
-    // If you need 'safe' transfer, use "safeTransferFrom" below instead of "transferFrom"
-    function transferFrom(address from, address to, uint256 tokenId) external;
-    // function safeTransferFrom(address from, address to, uint256 tokenId) external;
+    function safeTransferFrom(
+        address from,
+        address to,
+        uint256 tokenId
+    ) external;
 }
 
 interface IERC1155 {
@@ -60,14 +62,18 @@ contract BulkTokenDistributor {
 
         IERC20 erc20 = IERC20(token);
 
+        emit AirdropDone(memo);
+
         for (uint256 i; i < len; ) {
             // Transfer from the caller to each recipient
-            erc20.transferFrom(msg.sender, recipients[i], amounts[i]);
+            require(
+                erc20.transferFrom(msg.sender, recipients[i], amounts[i]),
+                "Transfer failed"
+            );
             unchecked {
                 ++i;
             }
         }
-        emit AirdropDone(memo);
     }
 
     /**
@@ -90,15 +96,15 @@ contract BulkTokenDistributor {
         if (len != tokenIds.length) revert ArrayLengthMismatch();
 
         IERC721 erc721 = IERC721(token);
+        emit AirdropDone(memo);
 
         for (uint256 i; i < len; ) {
             // If you need the safety check, replace with safeTransferFrom
-            erc721.transferFrom(msg.sender, recipients[i], tokenIds[i]);
+            erc721.safeTransferFrom(msg.sender, recipients[i], tokenIds[i]);
             unchecked {
                 ++i;
             }
         }
-        emit AirdropDone(memo);
     }
 
     /**
@@ -121,6 +127,8 @@ contract BulkTokenDistributor {
         IERC1155 erc1155 = IERC1155(token);
         uint256 len = recipients.length;
 
+        emit AirdropDone(memo);
+
         for (uint256 i; i < len; ) {
             erc1155.safeTransferFrom(
                 msg.sender,
@@ -133,7 +141,5 @@ contract BulkTokenDistributor {
                 ++i;
             }
         }
-
-        emit AirdropDone(memo);
     }
 }
