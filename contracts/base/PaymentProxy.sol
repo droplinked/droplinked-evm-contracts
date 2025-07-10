@@ -70,12 +70,29 @@ contract DroplinkedPaymentProxy is Ownable {
     function getLatestPrice(
         uint80 roundId
     ) internal view returns (uint256, uint256) {
-        (, int256 price, , uint256 timestamp, ) = priceFeed.getRoundData(
-            roundId
-        );
+        (
+            uint80 roundIdReturned,
+            int256 price,
+            ,
+            uint256 timestamp,
+            uint80 answeredInRound
+        ) = priceFeed.getRoundData(roundId);
+
+        // Validate price data integrity
         if (price <= 0) {
             revert InvalidPriceOrStale(price, timestamp, block.timestamp);
         }
+
+        // Check if the round is still valid
+        if (answeredInRound < roundIdReturned) {
+            revert InvalidPriceOrStale(price, timestamp, block.timestamp);
+        }
+
+        // Additional staleness check
+        if (timestamp == 0) {
+            revert InvalidPriceOrStale(price, timestamp, block.timestamp);
+        }
+
         return (uint256(price), timestamp);
     }
 
