@@ -41,8 +41,7 @@ contract DropShop is
 
     mapping(address => bool) public managers;
     mapping(uint256 => bool) public nullifiers;
-    address private constant DROPLINKED_MANAGER_WALLET =
-        0x2F86E1B1A69D259b9609b40E3cbEBEa29946f979;
+    address public droplinkedManagerWallet;
 
     uint256 public productCount;
     uint256 public affiliateRequestCount;
@@ -101,7 +100,9 @@ contract DropShop is
         shopInfo.shopOwner = _shopOwner;
         shopInfo.shopLogo = _shopLogo;
         shopInfo.shopDescription = _shopDescription;
-        managers[DROPLINKED_MANAGER_WALLET] = true;
+        // Set initial manager wallet - can be updated by owner
+        droplinkedManagerWallet = 0x2F86E1B1A69D259b9609b40E3cbEBEa29946f979;
+        managers[droplinkedManagerWallet] = true;
     }
 
     function transferManagerShip(
@@ -119,6 +120,16 @@ contract DropShop is
         address manager
     ) external onlyOwner isManager(manager) {
         managers[manager] = false;
+    }
+
+    function updateDroplinkedManagerWallet(
+        address newManagerWallet
+    ) external onlyOwner {
+        require(newManagerWallet != address(0), "Invalid manager address");
+        address oldManager = droplinkedManagerWallet;
+        managers[oldManager] = false;
+        droplinkedManagerWallet = newManagerWallet;
+        managers[newManagerWallet] = true;
     }
 
     function getProductId(
@@ -278,14 +289,36 @@ contract DropShop is
         uint256 productId
     ) external productExists(productId) onlyOwner nonReentrant {
         Product memory product = products[productId];
+
+        // Clear state before external call to prevent reentrancy
         delete products[productId];
-        IERC721(product.nftAddress).safeTransferFrom(
-            address(this),
-            msg.sender,
-            product.tokenId,
-            ""
-        );
+
+        // Emit event before external call
         emit ProductUnregistered(productId, msg.sender);
+
+        // Perform external call last (CEI pattern)
+        if (product.nftType == NFTType.ERC721) {
+            IERC721(product.nftAddress).safeTransferFrom(
+                address(this),
+                msg.sender,
+                product.tokenId,
+                ""
+            );
+        } else if (product.nftType == NFTType.ERC1155) {
+            uint256 balance = IERC1155(product.nftAddress).balanceOf(
+                address(this),
+                product.tokenId
+            );
+            if (balance > 0) {
+                IERC1155(product.nftAddress).safeTransferFrom(
+                    address(this),
+                    msg.sender,
+                    product.tokenId,
+                    balance,
+                    ""
+                );
+            }
+        }
     }
 
     function requestAffiliate(
