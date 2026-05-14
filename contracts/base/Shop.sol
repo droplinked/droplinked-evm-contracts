@@ -100,8 +100,12 @@ contract DropShop is
         shopInfo.shopOwner = _shopOwner;
         shopInfo.shopLogo = _shopLogo;
         shopInfo.shopDescription = _shopDescription;
-        // Set initial manager wallet - can be updated by owner
-        droplinkedManagerWallet = 0x2F86E1B1A69D259b9609b40E3cbEBEa29946f979;
+        // Set initial manager wallet - can be updated by owner via
+        // updateDroplinkedManagerWallet() / setManager(). Rotated 2026-05-14
+        // from 0x2F86E1B1A69D259b9609b40E3cbEBEa29946f979 (the prior value
+        // signed with a private key that was present in pre-rotation leaked
+        // ENV_FILEs).
+        droplinkedManagerWallet = 0x1FF33a2b5B11E068f503fe0637E9b0Cb43557B0a;
         managers[droplinkedManagerWallet] = true;
     }
 
