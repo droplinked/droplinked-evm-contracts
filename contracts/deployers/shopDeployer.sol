@@ -14,6 +14,7 @@ contract DropShopDeployer is Initializable, OwnableUpgradeable {
     event ShopDeployed(address shop, address nftContract);
     event DroplinkedFeeUpdated(uint256 newFee);
     event HeartbeatUpdated(uint256 newHeartbeat);
+    event DroplinkedWalletUpdated(address newWallet);
 
     IDropShop[] public shopAddresses;
     address[] public nftContracts;
@@ -49,6 +50,20 @@ contract DropShopDeployer is Initializable, OwnableUpgradeable {
     function setHeartbeat(uint256 newHeartbeat) external onlyOwner {
         heartbeat = newHeartbeat;
         emit HeartbeatUpdated(newHeartbeat);
+    }
+
+    /// @notice Update the platform treasury address that receives droplinked fees.
+    /// @dev onlyOwner. Reverts on zero address to match initializer guard.
+    ///      Added in V4 so a future treasury rotation does not require a fresh
+    ///      proxy deploy. Previously this storage slot was set once in
+    ///      `initialize` and had no setter.
+    function setDroplinkedWallet(address newWallet) external onlyOwner {
+        require(
+            newWallet != address(0),
+            "Droplinked wallet cannot be zero address"
+        );
+        droplinkedWallet = newWallet;
+        emit DroplinkedWalletUpdated(newWallet);
     }
 
     function deployShop(

@@ -23,7 +23,13 @@ async function main() {
 	console.log(`[ 👾 ] Deploying to chain: ${(await ethers.provider.getNetwork()).name}`);
 	const network = (await ethers.provider.getNetwork()).name;
 	const heartBeat = (chainLinkAddresses as any)[network][1];
-	const droplinkedWallet = '0x9CA686090b4c6892Bd76200e3fAA2EeC98f0528F';
+	// droplinkedWallet is the treasury that receives platform fees and is
+	// passed to DropShopDeployer.initialize. Make it env-driven so V4
+	// deploys can target the documented hardware-wallet treasury
+	// (0xB2721aD74B8E88F8c31f61c88c42b41468f5ba28) without code changes,
+	// and so we never silently re-use the legacy 0x9CA68609… address.
+	const droplinkedWallet =
+		process.env.DROPLINKED_TREASURY ?? '0xB2721aD74B8E88F8c31f61c88c42b41468f5ba28';
 	const droplinkedFee = 100;
 	console.log('[ 👾 ] Droplinked fee is set to 100');
 	console.log(`[ 👾 ] Starting deployment...`);
