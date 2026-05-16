@@ -15,16 +15,6 @@ const config: HardhatUserConfig = {
 			chainId: 1,
 			accounts: [process.env.PRIVATE_KEY as string],
 		},
-		skale: {
-			url: 'https://mainnet.skalenodes.com/v1/honorable-steel-rasalhague',
-			chainId: 1564830818,
-			accounts: [process.env.PRIVATE_KEY as string],
-		},
-		skaleCalypso: {
-			url: 'https://testnet.skalenodes.com/v1/giant-half-dual-testnet',
-			chainId: 974399131,
-			accounts: [process.env.PRIVATE_KEY as string],
-		},
 		bscTestnet: {
 			url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
 			chainId: 97,
