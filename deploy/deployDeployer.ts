@@ -10,7 +10,6 @@ const chainLinkAddresses = {
 	ethereumMainnet: ['0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419', 3600],
 	sepolia: ['0x694AA1769357215DE4FAC081bf1f309aDC325306', 3600],
 	// INFO: this is just a placeholder, no actual price feed contract exists in chain-link for this chains:
-	skale: ['0x0000000000000000000000000000000000000000', 120],
 	baseSepolia: ['0x0000000000000000000000000000000000000000', 120],
 	redbelly: ['0x0000000000000000000000000000000000000000', 120],
 	redbellyTestNet: ['0x0000000000000000000000000000000000000000', 120],
